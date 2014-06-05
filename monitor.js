@@ -3,7 +3,16 @@ var http = require('http');
 var https = require ('https');
 var url = require('url');
 
-module.exports = function(loggers) {
+var o = 0;
+var countersDef = {
+	badPatternErrors: {order: o++, displayName: 'Bad Pattern Errors'},
+	responseErrors: {order: o++, displayName: 'Response Errors'},
+	requestErrors: {order: o++, displayName: 'Request Errors'},
+	timeouts: {order: o++, displayName: 'Timeouts'}
+};
+
+module.exports = function(loggers, stats) {
+	var updateStats = stats.registerCounters('monitor', countersDef);
 	var private = {
 		foundBadPattern: function (patterns, data) {
 			var matchingString = null;
@@ -66,6 +75,7 @@ module.exports = function(loggers) {
 					var matchingString = private.foundBadPattern(website.patterns, responseData);
 					if (matchingString != null)
 						loggers.op.error(website.url + ' (found bad patterns: ' + matchingString + ')');
+						updateStats.increment('badPatternErrors');
 					// monitor again after waiting sampleRate seconds
 					monitorAgain();
 				});
@@ -73,6 +83,7 @@ module.exports = function(loggers) {
 				res.on('error', function (err) {
 					monitorAgain();
 					loggers.op.error("Response Error: " + err.message);
+					updateStats.increment('responseErrors');
 				});
 			});
 			// create request error handler
@@ -83,12 +94,14 @@ module.exports = function(loggers) {
 					return;
 				monitorAgain();
 				loggers.op.error("Request Error: " + err.message);
+				updateStats.increment('requestErrors');
 			});
 			// send request
 			req.end();
 			// start maxResponse timeout
 			var requestTimeoutId = setTimeout(function () {
 				abortRequest();
+				updateStats.increment('timeouts');
 				monitorAgain();
 			}, website.maxResponseTime * 1000);
 		}
@@ -119,7 +132,6 @@ module.exports = function(loggers) {
 				setTimeout(function () {
 					private.monitor(website);
 				}, randomNumber(0, website.sampleRate) * 1000);
-				//			console.log('website: ' + website.hostname);
 			});
 		},
 		stop: function () {

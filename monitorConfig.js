@@ -7,7 +7,7 @@ var config = {
 		{
 			url: 'https://www.google.com',
 			sampleRate: 15, // in seconds
-			maxResponseTime: 0.05, // in seconds
+			maxResponseTime: 20, // in seconds
 			patterns: [
 				/error/i,
 				/not found/i
