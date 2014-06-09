@@ -3,12 +3,11 @@ var http = require('http');
 var https = require ('https');
 var url = require('url');
 
-var o = 0;
 var countersDef = {
-	badPatternErrors: {order: o++, displayName: 'Bad Pattern Errors'},
-	responseErrors: {order: o++, displayName: 'Response Errors'},
-	requestErrors: {order: o++, displayName: 'Request Errors'},
-	timeouts: {order: o++, displayName: 'Timeouts'}
+	responseErrors: {displayName: 'Response Errors'},
+	requestErrors: {displayName: 'Request Errors'},
+	timeouts: {displayName: 'Timeouts'},
+	badPatternErrors: {displayName: 'Bad Pattern Errors'}
 };
 
 module.exports = function(loggers, stats) {
@@ -81,9 +80,9 @@ module.exports = function(loggers, stats) {
 				});
 				// create response error handler
 				res.on('error', function (err) {
-					monitorAgain();
 					loggers.op.error("Response Error: " + err.message);
 					updateStats.increment('responseErrors');
+					monitorAgain();
 				});
 			});
 			// create request error handler
@@ -92,9 +91,9 @@ module.exports = function(loggers, stats) {
 				// in that case, do nothing
 				if (requestAborted)
 					return;
-				monitorAgain();
 				loggers.op.error("Request Error: " + err.message);
 				updateStats.increment('requestErrors');
+				monitorAgain();
 			});
 			// send request
 			req.end();
