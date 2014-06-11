@@ -1,13 +1,17 @@
 var _ = require('underscore');
 var http = require('http');
 var https = require ('https');
+var querystring= require('querystring');
 var url = require('url');
 
 var countersDef = {
 	responseErrors: {displayName: 'Response Errors'},
 	requestErrors: {displayName: 'Request Errors'},
 	timeouts: {displayName: 'Timeouts'},
-	badPatternErrors: {displayName: 'Bad Pattern Errors'}
+	badPatternErrors: {displayName: 'Bad Pattern Errors'},
+	badResponse: {displayName: 'Bad Response'},
+	successfulResponse: {displayName: 'Successful Response'},
+	successfulRequest: {displayName: 'Successful Request'}
 };
 
 module.exports = function(loggers, stats) {
@@ -31,6 +35,7 @@ module.exports = function(loggers, stats) {
 			});
 		},
 		websites: [],
+		configHeaders: {},
 		monitor: function (website) {
 			var requestAborted = false;
 			var waitingToMonitor = false;
@@ -56,13 +61,27 @@ module.exports = function(loggers, stats) {
 			// create request
 			var responseData = '';
 			var protocol = (website.protocol == 'http:' ? http : https);
+			var method = website.post ? 'POST' : 'GET';
 			var options = {
 				host: website.hostname,
 				port: website.port,
 				path: website.path,
-				method: 'GET'
+				method: method
 			};
+			var postData = querystring.stringify(website.post);
+			if (method == 'POST')
+			var headers = _.extend({
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'Content-Length': postData.length
+			}, private.configHeaders);
+			_.extend(options, {headers: headers});
 			var req = protocol.request(options, function (res) {
+				// create response error handler
+				res.on('error', function (err) {
+					loggers.op.error('Response Error: ' + err.message);
+					updateStats.increment('responseErrors');
+					monitorAgain();
+				});
 				// receive partial data
 				res.on('data', function (chunk) {
 					responseData += chunk;
@@ -70,18 +89,22 @@ module.exports = function(loggers, stats) {
 				});
 				// received all data
 				res.on('end', function () {
-					// check patterns
-					var matchingString = private.foundBadPattern(website.patterns, responseData);
-					if (matchingString != null)
-						loggers.op.error(website.url + ' (found bad patterns: ' + matchingString + ')');
-						updateStats.increment('badPatternErrors');
+					loggers.op.info('Successful Response');
+					updateStats.increment('successfulResponse');
+					if (res.statusCode == 200)
+					{
+						// check patterns
+						var matchingString = private.foundBadPattern(website.patterns, responseData);
+						if (matchingString != null)
+						{
+							loggers.op.error(website.url + ' (found bad patterns: ' + matchingString + ')');
+							updateStats.increment('badPatternErrors');
+						}
+					}
+					else
+						loggers.op.error('Bad Response: ' + res.statusCode);
+						updateStats.increment('badResponse');
 					// monitor again after waiting sampleRate seconds
-					monitorAgain();
-				});
-				// create response error handler
-				res.on('error', function (err) {
-					loggers.op.error("Response Error: " + err.message);
-					updateStats.increment('responseErrors');
 					monitorAgain();
 				});
 			});
@@ -91,12 +114,16 @@ module.exports = function(loggers, stats) {
 				// in that case, do nothing
 				if (requestAborted)
 					return;
-				loggers.op.error("Request Error: " + err.message);
+				loggers.op.error('Request Error: ' + err.message);
 				updateStats.increment('requestErrors');
 				monitorAgain();
 			});
+			if (method == 'POST')
+				req.write(postData);
 			// send request
 			req.end();
+			loggers.op.info('Successful Request');
+			updateStats.increment('successfulRequest');
 			// start maxResponse timeout
 			var requestTimeoutId = setTimeout(function () {
 				abortRequest();
@@ -118,10 +145,12 @@ module.exports = function(loggers, stats) {
 					path: urlParts.path,
 					sampleRate: website.sampleRate,
 					maxResponseTime: website.maxResponseTime,
-					patterns: website.patterns
+					patterns: website.patterns,
+					post: website.post
 				});
 				private.configValidation(private.websites);
 			});
+			private.configHeaders = config.headers;
 		},
 		start: function () {
 			var randomNumber = function (min, max) {
@@ -141,6 +170,5 @@ module.exports = function(loggers, stats) {
 			});
 		}
 	};
-
 	return monitor;
 };
