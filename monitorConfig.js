@@ -18,8 +18,25 @@ var config = {
 			patterns: [
 				/test/i
 			]
+		},
+		{
+			url: 'https://demo.panosoft.com/DemoPAPG/logon.do?query=user',
+			patterns: [
+				/invalid user or password/i
+			],
+			post: {
+				'user.usrname': 'Joe',
+				password: 'Mama',
+				score: 0,
+				complexity: 0
+//				stateHash: 0
+			}
 		}
-	]
+
+	],
+	headers: {
+//		test: 'headers are working'
+	}
 };
 
 module.exports = config;
