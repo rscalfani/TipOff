@@ -5,14 +5,17 @@ var loggers = {
 	stats: log4js.getLogger('stats')
 };
 var config = require('./config');
-var stats = require('./stats')(['monitor', 'notifier'], loggers.stats, config.statsFreq);
+var stats = require('./stats')(['monitor', 'notifier'], loggers, config.statsFreq);
 var monitor = require('./monitor')(loggers, stats);
 var monitorConfig = require('./monitorConfig');
+var notifier = require('./notifier')(monitor, loggers, stats);
 
 process.on('uncaughtException', function(err) {
 	loggers.op.fatal('caught exception: ' + err.stack);
 	process.exit(1);
 });
+
 monitor.init(monitorConfig);
 monitor.start();
 stats.startLogging();
+notifier.init();
