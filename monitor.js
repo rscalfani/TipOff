@@ -1,7 +1,8 @@
 var _ = require('underscore');
+var EventEmitter = require('events').EventEmitter;
 var http = require('http');
 var https = require ('https');
-var querystring= require('querystring');
+var querystring = require('querystring');
 var url = require('url');
 
 var countersDef = {
@@ -80,7 +81,9 @@ module.exports = function(loggers, stats) {
 				res.on('error', function (err) {
 					loggers.op.error('Response Error: ' + err.message);
 					updateStats.increment('responseErrors');
+					monitor.emitter.emit('problem', website.name, website.url, 'Response Error');
 					monitorAgain();
+
 				});
 				// receive partial data
 				res.on('data', function (chunk) {
@@ -97,13 +100,19 @@ module.exports = function(loggers, stats) {
 						var matchingString = private.foundBadPattern(website.patterns, responseData);
 						if (matchingString != null)
 						{
-							loggers.op.error(website.url + ' (found bad patterns: ' + matchingString + ')');
+							loggers.op.error(website.url + ' (Found Bad Patterns: ' + matchingString + ')');
 							updateStats.increment('badPatternErrors');
+							monitor.emitter.emit('problem', website.name, website.url, 'Found Bad Patterns');
 						}
+						else
+								monitor.emitter.emit('no problems', website.name, website.url);
 					}
 					else
-						loggers.op.error('Bad Response: ' + res.statusCode);
+					{
+						loggers.op.error(website.url + ' (Bad Response: ' + res.statusCode + ')');
 						updateStats.increment('badResponse');
+						monitor.emitter.emit('problem', website.name, website.url, 'Bad Response');
+					}
 					// monitor again after waiting sampleRate seconds
 					monitorAgain();
 				});
@@ -116,6 +125,7 @@ module.exports = function(loggers, stats) {
 					return;
 				loggers.op.error('Request Error: ' + err.message);
 				updateStats.increment('requestErrors');
+				monitor.emitter.emit('problem', website.name, website.url, 'Request Error');
 				monitorAgain();
 			});
 			if (method == 'POST')
@@ -127,17 +137,21 @@ module.exports = function(loggers, stats) {
 			// start maxResponse timeout
 			var requestTimeoutId = setTimeout(function () {
 				abortRequest();
+				loggers.op.error(website.url + 'Timeout'); // TODO
 				updateStats.increment('timeouts');
+				monitor.emitter.emit('problem', website.name, website.url, 'Timeout');
 				monitorAgain();
 			}, website.maxResponseTime * 1000);
 		}
 	};
 	var monitor = {
+		emitter: new EventEmitter,
 		init: function (config) {
 			config.websites.forEach(function (websiteConfig) {
 				var website = _.defaults({}, websiteConfig, config.defaults);
 				var urlParts = url.parse(website.url);
 				private.websites.push({
+					name: website.name,
 					url: website.url,
 					protocol: urlParts.protocol,
 					hostname: urlParts.hostname,
