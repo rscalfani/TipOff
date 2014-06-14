@@ -3,7 +3,7 @@ module.exports = {
 		{
 			type: 'file',
 			filename: '/tmp/test.log',
-			maxLogSize: 1000, //20 * 1024 * 1024,
+			maxLogSize: 20 * 1024 * 1024,
 			backups: 3
 		},
 		{

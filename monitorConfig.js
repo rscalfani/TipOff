@@ -5,6 +5,7 @@ var config = {
 	},
 	websites: [
 		{
+			name: 'Google',
 			url: 'https://www.google.com',
 			sampleRate: 15, // in seconds
 			maxResponseTime: 20, // in seconds
@@ -14,12 +15,14 @@ var config = {
 			]
 		},
 		{
+			name: 'Local Host',
 			url: 'http://localhost:8000/test.txt',
 			patterns: [
 				/test/i
 			]
 		},
 		{
+			name: 'Panosoft',
 			url: 'https://demo.panosoft.com/DemoPAPG/logon.do?query=user',
 			patterns: [
 				/invalid user or password/i
