@@ -1,9 +1,12 @@
 var deepcopy = require('deepcopy');
 
-module.exports = function(moduleOrder, logger, logFreq) {
+module.exports = function(moduleOrder, loggers, logFreq) {
+	var logger = loggers.stats;
+	var timers = require('./timers')(loggers);
 	var private = {
 		loggingId: null,
 		monitorCounters: {}, // moduleName: countersDef
+		websites: {}, // url: name
 		getLongestLength: function(list) {
 				var longestLength = 0;
 				list.forEach(function(item) {
@@ -56,6 +59,19 @@ module.exports = function(moduleOrder, logger, logFreq) {
 			});
 			// return big string to be logged
 			return formatted;
+		},
+		formatTimers: function() {
+			var formatted = '';
+			Object.keys(private.websites).forEach(function(url) {
+				['up', 'down'].forEach(function(type) {
+					formatted += type + 'time for ' + private.websites[url] + ' ' + timers.getTimerValue(url, type) + '\n';
+				});
+			});
+
+			// TODO finish formatting ^
+
+
+			return formatted;
 		}
 	};
 	var stats = {
@@ -82,8 +98,10 @@ module.exports = function(moduleOrder, logger, logFreq) {
 			if (!private.loggingId)
 			{
 				logger.info(private.formatCounters()); // TODO remove after testing
+				logger.info(private.formatTimers()); // TODO remove after testing
 				private.loggingId = setInterval(function(){
 					logger.info(private.formatCounters());
+					logger.info(private.formatTimers());
 				}, logFreq * 1000);
 			}
 		},
@@ -91,6 +109,21 @@ module.exports = function(moduleOrder, logger, logFreq) {
 			if (private.loggingId)
 				clearInterval(private.loggingId);
 			private.loggingId = null;
+		},
+		registerWebsite: function(url, name, state) {
+			private.websites[url] = name;
+			['up', 'down'].forEach(function(type) {
+				timers.createTimer(url, type);
+			});
+			timers.startTimer(url, state);
+		},
+		updateWebsite: function(url, state) {
+//			if (state == 'up')
+//				timers.stopTimer(url, 'down');
+//			else
+//				timers.stopTimer(url, 'up');
+			timers.stopTimer(url, state == 'up' ? 'down' : 'up');
+			timers.startTimer(url, state);
 		}
 	};
 	return stats;
