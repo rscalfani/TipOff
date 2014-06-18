@@ -5,7 +5,8 @@ var loggers = {
 	stats: log4js.getLogger('stats')
 };
 var config = require('./config');
-var stats = require('./stats')(['monitor', 'notifier'], loggers, config.statsFreq);
+var timers = require('./timers')(loggers);
+var stats = require('./stats')(['monitor', 'notifier'], loggers, config.statsFreq, timers);
 var monitor = require('./monitor')(loggers, stats);
 var monitorConfig = require('./monitorConfig');
 var notifier = require('./notifier')(monitor, loggers, stats);
