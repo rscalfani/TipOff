@@ -1,8 +1,7 @@
 var deepcopy = require('deepcopy');
 
-module.exports = function(moduleOrder, loggers, logFreq) {
+module.exports = function(moduleOrder, loggers, logFreq, timers) {
 	var logger = loggers.stats;
-	var timers = require('./timers')(loggers);
 	var private = {
 		loggingId: null,
 		monitorCounters: {}, // moduleName: countersDef
@@ -15,19 +14,42 @@ module.exports = function(moduleOrder, loggers, logFreq) {
 				});
 				return longestLength;
 		},
-		padRight: function(str, length) {
+		padRight: function(str, length, pad) {
 			str = str || '';
+			str = String(str);
+			pad = pad || ' ';
 			var numberOfSpaces = length - str.length;
 			for (var i = 0; i < numberOfSpaces; ++i)
-				str = str + ' ';
+				str = str + pad;
 			return str;
 		},
-		padLeft: function(str, length) {
+		padLeft: function(str, length, pad) {
 			str = str || '';
+			str = String(str);
+			pad = pad || ' ';
 			var numberOfSpaces = length - str.length;
 			for (var i = 0; i < numberOfSpaces; ++i)
-				str = ' ' + str;
+				str = pad + str;
 			return str;
+		},
+		createBuffer: function(length) {
+			// hack to convert an empty array to one with undefined values so we can use map
+			// ex: Array(3) --> [ , , ]
+			// ex: Array.apply(null, Array(3)) --> [undefined, undefined, undefined]
+			return Array.apply(null, Array(length)).map(function () {
+				return '';
+			});
+		},
+		addRepeatingColumn: function(buffer, column) {
+			buffer.forEach(function(item, index) {
+				buffer[index] += column;
+			});
+		},
+		addColumnToBuffer: function(buffer, column, columnPad, padFunc) {
+			var longestLength = private.getLongestLength(column) + columnPad;
+			column.forEach(function(item, index) {
+				buffer[index] += padFunc(item, longestLength);
+			});
 		},
 		formatCounters: function() {
 			var formatted = '';
@@ -36,41 +58,69 @@ module.exports = function(moduleOrder, loggers, logFreq) {
 				if (countersDef)
 				{
 					formatted += 'Module: ' + moduleName + '\n';
+					var buffer = private.createBuffer(Object.keys(countersDef).length);
 					var list = function(key) {
 						return Object.keys(countersDef).map(function(counterName) {
 							return countersDef[counterName][key];
 						});
 					};
-					var mapDate = function(ticks) {
+					private.addColumnToBuffer(buffer, list('displayName'), 10, private.padRight);
+					private.addColumnToBuffer(buffer, list('counter').map(String), 10, private.padLeft);
+					private.addRepeatingColumn(buffer, '          ');
+					private.addColumnToBuffer(buffer, list('lastUpdated').map(function(ticks) {
 						if (ticks)
 							return '[' + new Date(ticks) + ']';
-					};
-					var longestDisplayName = private.getLongestLength(list('displayName')) + 10;
-					var longestCounter = private.getLongestLength(list('counter').map(String)) + 10;
-					var longestLastUpdated = private.getLongestLength(list('lastUpdated').map(mapDate)) + 10;
-
-					Object.keys(countersDef).forEach(function(counterName) {
-						var displayName = private.padRight(countersDef[counterName].displayName, longestDisplayName);
-						var counter = private.padLeft(String(countersDef[counterName].counter), longestCounter);
-						var lastUpdated = private.padLeft(mapDate(countersDef[counterName].lastUpdated), longestLastUpdated);
-						formatted += displayName + counter + (lastUpdated || '') + '\n';
-					});
+						else
+							return '';
+					}), 10, private.padRight);
+					formatted += buffer.join('\n');
 				}
 			});
 			// return big string to be logged
 			return formatted;
 		},
 		formatTimers: function() {
-			var formatted = '';
-			Object.keys(private.websites).forEach(function(url) {
-				['up', 'down'].forEach(function(type) {
-					formatted += type + 'time for ' + private.websites[url] + ' ' + timers.getTimerValue(url, type) + '\n';
-				});
+			var formatted = '\n';
+			var websites = private.websites;
+			var urls = Object.keys(websites);
+			var buffer = private.createBuffer(urls.length);
+			var names = urls.map(function (url) {
+				return websites[url];
 			});
-
-			// TODO finish formatting ^
-
-
+			var getTime = function(ms) {
+				var secs = Math.floor(ms / 1000);
+				var days = Math.floor(secs / (24 * 60 * 60));
+				secs -= days * 24 * 60 * 60;
+				var hours = Math.floor(secs / (60 * 60));
+				secs -= hours * 60 * 60;
+				var mins = Math.floor(secs / 60);
+				secs -= mins * 60;
+				return days + ' days, ' + private.padLeft(hours, 2, '0') + ':' + private.padLeft(mins, 2, '0') + ':' + private.padLeft(secs, 2, '0');
+			};
+			var getTimers = function(type) {
+				return urls.map(function (url) {
+					return getTime(timers.getTimerValue(url, type));
+				});
+			};
+			var uptimes = getTimers('up');
+			var downtimes = getTimers('down');
+			var getPercentages = function () {
+				var totals = urls.map(function (url) {
+					return timers.getTimerValue(url, 'up') + timers.getTimerValue(url, 'down');
+				});
+				return urls.map(function (url, index) {
+					return Math.round((timers.getTimerValue(url, 'up') / totals[index]) * 100) + '%';
+				});
+			};
+			private.addColumnToBuffer(buffer, names, 5, private.padRight);
+			private.addRepeatingColumn(buffer, '   uptime:');
+			private.addColumnToBuffer(buffer, uptimes, 1, private.padLeft);
+			private.addRepeatingColumn(buffer, '        downtime:');
+			private.addColumnToBuffer(buffer, downtimes, 1, private.padLeft);
+			private.addRepeatingColumn(buffer, '        (up:');
+			private.addColumnToBuffer(buffer, getPercentages(), 1, private.padLeft);
+			private.addRepeatingColumn(buffer, ')');
+			formatted += buffer.join('\n');
 			return formatted;
 		}
 	};
