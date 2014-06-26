@@ -7,16 +7,17 @@ var loggers = {
 var config = require('./config');
 var timers = require('./timers')(loggers);
 var stats = require('./stats')(['monitor', 'notifier'], loggers, config.statsFreq, timers);
-var monitor = require('./monitor')(loggers, stats);
 var monitorConfig = require('./monitorConfig');
-var notifier = require('./notifier')(monitor, loggers, stats);
+var monitor = require('./monitor')(loggers, stats, monitorConfig);
+var notifierConfig = require('./notifierConfig');
+var notifier = require('./notifier')(monitor, loggers, stats, notifierConfig);
 
 process.on('uncaughtException', function(err) {
 	loggers.op.fatal('caught exception: ' + err.stack);
 	process.exit(1);
 });
 
-monitor.init(monitorConfig);
+monitor.init();
 monitor.start();
 stats.startLogging();
 notifier.init();
