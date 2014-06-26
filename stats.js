@@ -36,7 +36,7 @@ module.exports = function(moduleOrder, loggers, logFreq, timers) {
 			// hack to convert an empty array to one with undefined values so we can use map
 			// ex: Array(3) --> [ , , ]
 			// ex: Array.apply(null, Array(3)) --> [undefined, undefined, undefined]
-			return Array.apply(null, Array(length)).map(function () {
+			return Array.apply(null, Array(length)).map(function() {
 				return '';
 			});
 		},
@@ -54,7 +54,7 @@ module.exports = function(moduleOrder, loggers, logFreq, timers) {
 		formatCounters: function() {
 			var formatted = '';
 			moduleOrder.forEach(function(moduleName) {
-				var countersDef = private.monitorCounters[moduleName]
+				var countersDef = private.monitorCounters[moduleName];
 				if (countersDef)
 				{
 					formatted += 'Module: ' + moduleName + '\n';
@@ -84,31 +84,38 @@ module.exports = function(moduleOrder, loggers, logFreq, timers) {
 			var websites = private.websites;
 			var urls = Object.keys(websites);
 			var buffer = private.createBuffer(urls.length);
-			var names = urls.map(function (url) {
+			var names = urls.map(function(url) {
 				return websites[url];
 			});
 			var getTime = function(ms) {
+				// secs = ms/how many ms in a sec (1000 ms = 1 sec)
 				var secs = Math.floor(ms / 1000);
+				// days = secs/how many secs in a day (24 [hrs in day] * 60 [mins in hr] * 60 [secs in min])
 				var days = Math.floor(secs / (24 * 60 * 60));
+				// secs = secs - (days * how many secs in a day) OR secs - days in secs unit
 				secs -= days * 24 * 60 * 60;
-				var hours = Math.floor(secs / (60 * 60));
-				secs -= hours * 60 * 60;
+				// hrs = secs/how many secs in an hr (60 [mins in hour] * 60 [secs in min])
+				var hrs = Math.floor(secs / (60 * 60));
+				// secs = secs - (hrs * how many secs in an hr) OR secs - hrs in secs unit
+				secs -= hrs * 60 * 60;
+				// mins = secs/how many secs in a min (60 secs = 1 min)
 				var mins = Math.floor(secs / 60);
+				// secs = secs - (mins * how many secs in min) OR secs - mins in secs unit
 				secs -= mins * 60;
-				return days + ' days, ' + private.padLeft(hours, 2, '0') + ':' + private.padLeft(mins, 2, '0') + ':' + private.padLeft(secs, 2, '0');
+				return days + ' days, ' + private.padLeft(hrs, 2, '0') + ':' + private.padLeft(mins, 2, '0') + ':' + private.padLeft(secs, 2, '0');
 			};
 			var getTimers = function(type) {
-				return urls.map(function (url) {
+				return urls.map(function(url) {
 					return getTime(timers.getTimerValue(url, type));
 				});
 			};
 			var uptimes = getTimers('up');
 			var downtimes = getTimers('down');
-			var getPercentages = function () {
-				var totals = urls.map(function (url) {
+			var getPercentages = function() {
+				var totals = urls.map(function(url) {
 					return timers.getTimerValue(url, 'up') + timers.getTimerValue(url, 'down');
 				});
-				return urls.map(function (url, index) {
+				return urls.map(function(url, index) {
 					return Math.round((timers.getTimerValue(url, 'up') / totals[index]) * 100) + '%';
 				});
 			};
