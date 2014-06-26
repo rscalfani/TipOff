@@ -15,7 +15,7 @@ var countersDef = {
 	successfulRequest: {displayName: 'Successful Request'}
 };
 
-module.exports = function(loggers, stats) {
+module.exports = function(loggers, stats, config) {
 	var updateStats = stats.registerCounters('monitor', countersDef);
 	var private = {
 		foundBadPattern: function (patterns, data) {
@@ -146,7 +146,7 @@ module.exports = function(loggers, stats) {
 	};
 	var monitor = {
 		emitter: new EventEmitter,
-		init: function (config) {
+		init: function () {
 			config.websites.forEach(function (websiteConfig) {
 				var website = _.defaults({}, websiteConfig, config.defaults);
 				var urlParts = url.parse(website.url);
@@ -169,7 +169,7 @@ module.exports = function(loggers, stats) {
 		start: function () {
 			var randomNumber = function (min, max) {
 				return Math.random() * (max - min) + min;
-			}
+			};
 			private.websites.forEach(function (website) {
 				setTimeout(function () {
 					private.monitor(website);
