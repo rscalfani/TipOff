@@ -3,13 +3,6 @@ module.exports = function(loggers) {
 		timers: {}
 	};
 	var timers = {
-		getTimerValue: function(url, type) {
-			var timer = private.timers[url][type];
-			if (timer.running)
-				return (Date.now() - timer.startTime) + timer.total;
-			else
-				return timer.total;
-		},
 		createTimer: function (url, type) {
 			if (!(url in private.timers))
 				private.timers[url] = {};
@@ -18,6 +11,13 @@ module.exports = function(loggers) {
 				startTime: 0,
 				running: false
 			};
+		},
+		getTimerValue: function(url, type) {
+			var timer = private.timers[url][type];
+			if (timer.running)
+				return (Date.now() - timer.startTime) + timer.total;
+			else
+				return timer.total;
 		},
 		startTimer: function (url, type) {
 			var timer = private.timers[url][type];
@@ -36,9 +36,5 @@ module.exports = function(loggers) {
 			}
 		}
 	};
-
-//	setInterval(function() {
-//		console.log('value: ' + timers.getTimerValue('http://localhost:8000/test.txt', 'up'));
-//	}, 10000);
 	return timers;
 };
