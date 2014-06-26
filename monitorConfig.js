@@ -32,7 +32,6 @@ var config = {
 				password: 'Mama',
 				score: 0,
 				complexity: 0
-//				stateHash: 0
 			}
 		}
 
