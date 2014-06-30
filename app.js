@@ -6,11 +6,12 @@ var loggers = {
 };
 var config = require('./config');
 var timers = require('./timers')(loggers);
-var stats = require('./stats')(['monitor', 'notifier'], loggers, config.statsFreq, timers);
+var formatter = require('./formatter')();
+var stats = require('./stats')(['monitor', 'notifier'], loggers, config.statsFreq, timers, formatter);
 var monitorConfig = require('./monitorConfig');
 var monitor = require('./monitor')(loggers, stats, monitorConfig);
 var notifierConfig = require('./notifierConfig');
-var notifier = require('./notifier')(monitor, loggers, stats, notifierConfig);
+var notifier = require('./notifier')(loggers, formatter, stats, monitor, notifierConfig);
 
 process.on('uncaughtException', function(err) {
 	loggers.op.fatal('caught exception: ' + err.stack);
