@@ -1,4 +1,4 @@
-module.exports = function(monitor, loggers, stats, config) {
+module.exports = function(loggers, formatter, stats, monitor, config) {
 	var private = {
 		newEvents: [], //{name: name, state: state}
 		states: {}, // url: {name: name, state: state}
@@ -12,10 +12,19 @@ module.exports = function(monitor, loggers, stats, config) {
 			}).map(function(url) {
 				return private.states[url].name;
 			}).join('\n');
-			var events = private.newEvents.map(function(event) {
-				return event.name + ' is ' + event.state;
-			}).join('\n');
-			console.log('DOWN WEBSITES:\n' + downWebsites + '\nEVENTS:\n' + events);
+			var getEventItems = function(eventItem) {
+				return private.newEvents.map(function(event) {
+					return event[eventItem];
+				});
+			};
+			var buffer = formatter.createBuffer(getEventItems('name').length);
+			formatter.addColumnToBuffer(buffer, getEventItems('name'), 5, formatter.padRight);
+			formatter.addColumnToBuffer(buffer, getEventItems('state'), 1, formatter.padRight);
+			formatter.addRepeatingColumn(buffer, '    ');
+			formatter.addColumnToBuffer(buffer, getEventItems('date').map(function(ticks) {
+				return '[' + new Date(ticks) + ']';
+			}), 1, formatter.padLeft);
+			console.log('DOWN WEBSITES:\n' + downWebsites + '\n\nEVENTS:\n' + buffer.join('\n'));
 		},
 		emailUpReport: function() {
 			console.log('ALL WEBSITES ARE UP')
@@ -38,7 +47,8 @@ module.exports = function(monitor, loggers, stats, config) {
 				{
 					private.newEvents.push({
 						name: name,
-						state: state
+						state: state,
+						date: Date.now()
 					});
 					states[url].state = 'down';
 					stats.updateWebsite(url, state);
@@ -74,11 +84,12 @@ module.exports = function(monitor, loggers, stats, config) {
 				}
 				if (states[url].state != 'up')
 				{
-					if (!firstTime)
+					if (!firstTime) // don't want website is up in events unless the website went down first
 					{
 						private.newEvents.push({
 							name: name,
-							state: state
+							state: state,
+							date: Date.now()
 						});
 					}
 					states[url].state = 'up';
