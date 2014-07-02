@@ -36,7 +36,6 @@ module.exports = function(loggers, stats, config) {
 			});
 		},
 		websites: [],
-		configHeaders: {},
 		monitor: function (website) {
 			var requestAborted = false;
 			var waitingToMonitor = false;
@@ -44,6 +43,7 @@ module.exports = function(loggers, stats, config) {
 			var abortRequest = function () {
 				req.abort();
 				requestAborted = true;
+				clearTimeout(requestTimeoutId);
 			};
 			website.stop = function () {
 				// waiting to monitor again
@@ -70,20 +70,23 @@ module.exports = function(loggers, stats, config) {
 				method: method
 			};
 			var postData = querystring.stringify(website.post);
+			_.extend(options, website.httpOptions);
 			if (method == 'POST')
-			var headers = _.extend({
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'Content-Length': postData.length
-			}, private.configHeaders);
-			_.extend(options, {headers: headers});
+			{
+				_.defaults(options, {headers: {}});
+				_.extend(options.headers, {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'Content-Length': postData.length
+				});
+			}
 			var req = protocol.request(options, function (res) {
 				// create response error handler
 				res.on('error', function (err) {
-					loggers.op.error('Response Error: ' + err.message);
+					loggers.op.warn('Response Error: ' + err.message);
 					updateStats.increment('responseErrors');
 					monitor.emitter.emit('problem', website.name, website.url, 'Response Error');
+					clearTimeout(requestTimeoutId);
 					monitorAgain();
-
 				});
 				// receive partial data
 				res.on('data', function (chunk) {
@@ -92,7 +95,8 @@ module.exports = function(loggers, stats, config) {
 				});
 				// received all data
 				res.on('end', function () {
-					loggers.op.info('Successful Response');
+					clearTimeout(requestTimeoutId);
+					loggers.op.trace('Successful Response');
 					updateStats.increment('successfulResponse');
 					if (res.statusCode == 200)
 					{
@@ -100,16 +104,25 @@ module.exports = function(loggers, stats, config) {
 						var matchingString = private.foundBadPattern(website.patterns, responseData);
 						if (matchingString != null)
 						{
-							loggers.op.error(website.url + ' (Found Bad Patterns: ' + matchingString + ')');
+							loggers.op.warn(website.url + ' (Found Bad Patterns: ' + matchingString + ')');
 							updateStats.increment('badPatternErrors');
 							monitor.emitter.emit('problem', website.name, website.url, 'Found Bad Patterns');
 						}
 						else
-								monitor.emitter.emit('no problems', website.name, website.url);
+							monitor.emitter.emit('no problems', website.name, website.url);
+					}
+					else if ([301, 302, 307, 308].indexOf(res.statusCode) != -1 )
+					{
+						loggers.op.info('Redirecting from ' + website.url + ' to ' + res.headers.location);
+						var urlParts = url.parse(res.headers.location);
+						website.protocol = urlParts.protocol;
+						website.hostname = urlParts.hostname;
+						website.port = urlParts.port;
+						website.path = urlParts.path;
 					}
 					else
 					{
-						loggers.op.error(website.url + ' (Bad Response: ' + res.statusCode + ')');
+						loggers.op.warn(website.url + ' (Bad Response: ' + res.statusCode + ')');
 						updateStats.increment('badResponse');
 						monitor.emitter.emit('problem', website.name, website.url, 'Bad Response');
 					}
@@ -123,21 +136,22 @@ module.exports = function(loggers, stats, config) {
 				// in that case, do nothing
 				if (requestAborted)
 					return;
-				loggers.op.error('Request Error: ' + err.message);
+				loggers.op.warn('Request Error: ' + err.message);
 				updateStats.increment('requestErrors');
 				monitor.emitter.emit('problem', website.name, website.url, 'Request Error');
+				clearTimeout(requestTimeoutId);
 				monitorAgain();
 			});
 			if (method == 'POST')
 				req.write(postData);
 			// send request
 			req.end();
-			loggers.op.info('Successful Request');
+			loggers.op.trace('Successful Request');
 			updateStats.increment('successfulRequest');
 			// start maxResponse timeout
 			var requestTimeoutId = setTimeout(function () {
 				abortRequest();
-				loggers.op.error(website.url + 'Timeout'); // TODO
+				loggers.op.warn(website.url + ' Timeout');
 				updateStats.increment('timeouts');
 				monitor.emitter.emit('problem', website.name, website.url, 'Timeout');
 				monitorAgain();
@@ -160,11 +174,11 @@ module.exports = function(loggers, stats, config) {
 					sampleRate: website.sampleRate,
 					maxResponseTime: website.maxResponseTime,
 					patterns: website.patterns,
-					post: website.post
+					post: website.post,
+					httpOptions: website.httpOptions
 				});
 				private.configValidation(private.websites);
 			});
-			private.configHeaders = config.headers;
 		},
 		start: function () {
 			var randomNumber = function (min, max) {
