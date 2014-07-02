@@ -8,10 +8,29 @@ module.exports = {
 		},
 		{
 			type: 'console'
+		},
+		{
+			type: 'logLevelFilter',
+			level: 'ERROR',
+			appender: {
+				type: 'smtp',
+				sender: 'rscalfani@gmail.com',
+				recipients: 'rscalfani@gmail.com',
+				subject: 'Error Report',
+				transport: 'SMTP',
+				SMTP: {
+					host: 'mailtrap.io',
+					port: 465,
+					auth: {
+						user: '21426859fad676806',
+						pass: '01d93f1d839a96'
+					}
+				}
+			}
 		}
 	],
 	levels: {
-		op: 'WARN',
+		op: 'INFO',
 		stats: 'INFO'
 	}
 };
