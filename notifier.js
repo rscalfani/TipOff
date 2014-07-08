@@ -62,6 +62,8 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 	var notifier = {
 		init: function() {
 			private.configValidation();
+		},
+		start: function() {
 			monitor.emitter.on('problem', function(name, url, message) {
 				var states = private.states;
 				var state = 'down';
@@ -138,6 +140,11 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 					clearInterval(private.intervalTimer);
 				}
 			});
+		},
+		stop: function() {
+			monitor.emitter.removeAllListeners();
+			clearInterval(private.intervalTimer);
+			clearInterval(private.nagIntervalTimer);
 		}
 	};
 	return notifier;
