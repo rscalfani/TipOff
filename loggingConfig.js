@@ -16,7 +16,7 @@ module.exports = {
 				type: 'smtp',
 				sender: 'rscalfani@gmail.com',
 				recipients: 'rscalfani@gmail.com',
-				subject: 'Error Report',
+				subject: 'TipOff: Error Report',
 				transport: 'SMTP',
 				SMTP: {
 					host: 'mailtrap.io',
@@ -31,6 +31,7 @@ module.exports = {
 	],
 	levels: {
 		op: 'INFO',
-		stats: 'INFO'
+		stats: 'INFO',
+		forever: 'ERROR'
 	}
 };
