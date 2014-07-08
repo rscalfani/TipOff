@@ -14,11 +14,27 @@ var notifierConfig = require('./notifierConfig');
 var notifier = require('./notifier')(loggers, formatter, stats, monitor, notifierConfig);
 
 process.on('uncaughtException', function(err) {
-	loggers.op.fatal('caught exception: ' + err.stack);
+	loggers.op.fatal('uncaught exception: ' + err.stack);
 	process.exit(1);
 });
 
+var exit = function(type) {
+	return function() {
+		loggers.op.info('exiting, received: ' + type);
+		monitor.stop();
+		stats.stop();
+		notifier.stop();
+		log4js.shutdown(function() {
+			process.exit(1);
+		});
+	};
+};
+
+process.on('SIGTERM', exit('SIGTERM'));
+process.on('SIGINT', exit('SIGINT'));
+
 monitor.init();
 monitor.start();
-stats.startLogging();
+stats.start();
 notifier.init();
+notifier.start();
