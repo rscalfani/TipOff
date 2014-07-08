@@ -35,6 +35,7 @@ module.exports = function(loggers, stats, config) {
 					throw new Error('maxResponseTime of ' + website.hostname + ' must be equal to or greater than its sampleRate');
 			});
 		},
+		startIds: [],
 		websites: [],
 		monitor: function (website) {
 			var requestAborted = false;
@@ -185,14 +186,19 @@ module.exports = function(loggers, stats, config) {
 				return Math.random() * (max - min) + min;
 			};
 			private.websites.forEach(function (website) {
-				setTimeout(function () {
+				var startId = setTimeout(function () {
 					private.monitor(website);
 				}, randomNumber(0, website.sampleRate) * 1000);
+				private.startIds.push(startId);
 			});
 		},
 		stop: function () {
+			private.startIds.forEach(function(startId) {
+				clearTimeout(startId);
+			});
 			private.websites.forEach(function (website) {
-				website.stop();
+				if(website.stop)
+					website.stop();
 				// removing stop function to free up its closure
 				delete website.stop;
 			});
