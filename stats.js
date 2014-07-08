@@ -106,7 +106,7 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 				}
 			};
 		},
-		startLogging: function() {
+		start: function() {
 			if (!private.loggingId)
 			{
 				logger.info(private.formatCounters()); // TODO remove after testing
@@ -117,7 +117,7 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 				}, logFreq * 1000);
 			}
 		},
-		stopLogging:function() {
+		stop:function() {
 			if (private.loggingId)
 				clearInterval(private.loggingId);
 			private.loggingId = null;
