@@ -21,8 +21,8 @@ process.on('uncaughtException', function(err) {
 var exit = function(type) {
 	return function() {
 		loggers.op.info('exiting, received: ' + type);
-		monitor.stop();
 		stats.stop();
+		monitor.stop();
 		notifier.stop();
 		log4js.shutdown(function() {
 			process.exit(1);
@@ -30,8 +30,8 @@ var exit = function(type) {
 	};
 };
 
-process.on('SIGTERM', exit('SIGTERM'));
 process.on('SIGINT', exit('SIGINT'));
+process.on('SIGTERM', exit('SIGTERM'));
 
 monitor.init();
 monitor.start();

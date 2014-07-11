@@ -18,9 +18,9 @@ var countersDef = {
 module.exports = function(loggers, stats, config) {
 	var updateStats = stats.registerCounters('monitor', countersDef);
 	var private = {
-		foundBadPattern: function (patterns, data) {
+		foundBadPattern: function(patterns, data) {
 			var matchingString = null;
-			patterns.some(function (pattern) {
+			patterns.some(function(pattern) {
 				var result = data.match(pattern);
 				if (result != null) {
 					matchingString = result[0];
@@ -29,24 +29,24 @@ module.exports = function(loggers, stats, config) {
 			});
 			return matchingString;
 		},
-		configValidation: function (websites) {
-			websites.forEach(function (website) {
+		configValidation: function(websites) {
+			websites.forEach(function(website) {
 				if (website.maxResponseTime < website.sampleRate)
 					throw new Error('maxResponseTime of ' + website.hostname + ' must be equal to or greater than its sampleRate');
 			});
 		},
 		startIds: [],
 		websites: [],
-		monitor: function (website) {
+		monitor: function(website) {
 			var requestAborted = false;
 			var waitingToMonitor = false;
 			var waitingTimeoutId;
-			var abortRequest = function () {
+			var abortRequest = function() {
 				req.abort();
 				requestAborted = true;
 				clearTimeout(requestTimeoutId);
 			};
-			website.stop = function () {
+			website.stop = function() {
 				// waiting to monitor again
 				if (waitingToMonitor == true)
 					clearTimeout(waitingTimeoutId);
@@ -54,9 +54,9 @@ module.exports = function(loggers, stats, config) {
 				else
 					abortRequest();
 			};
-			var monitorAgain = function () {
+			var monitorAgain = function() {
 				waitingToMonitor = true;
-				waitingTimeoutId = setTimeout(function () {
+				waitingTimeoutId = setTimeout(function() {
 					private.monitor(website);
 				}, website.sampleRate * 1000);
 			};
@@ -80,9 +80,9 @@ module.exports = function(loggers, stats, config) {
 					'Content-Length': postData.length
 				});
 			}
-			var req = protocol.request(options, function (res) {
+			var req = protocol.request(options, function(res) {
 				// create response error handler
-				res.on('error', function (err) {
+				res.on('error', function(err) {
 					loggers.op.warn('Response Error: ' + err.message);
 					updateStats.increment('responseErrors');
 					monitor.emitter.emit('problem', website.name, website.url, 'Response Error');
@@ -90,12 +90,12 @@ module.exports = function(loggers, stats, config) {
 					monitorAgain();
 				});
 				// receive partial data
-				res.on('data', function (chunk) {
+				res.on('data', function(chunk) {
 					responseData += chunk;
 					clearTimeout(requestTimeoutId);
 				});
 				// received all data
-				res.on('end', function () {
+				res.on('end', function() {
 					clearTimeout(requestTimeoutId);
 					loggers.op.trace('Successful Response');
 					updateStats.increment('successfulResponse');
@@ -127,12 +127,11 @@ module.exports = function(loggers, stats, config) {
 						updateStats.increment('badResponse');
 						monitor.emitter.emit('problem', website.name, website.url, 'Bad Response');
 					}
-					// monitor again after waiting sampleRate seconds
 					monitorAgain();
 				});
 			});
 			// create request error handler
-			req.on('error', function (err) {
+			req.on('error', function(err) {
 				// sometimes req.abort() causes an error
 				// in that case, do nothing
 				if (requestAborted)
@@ -150,7 +149,7 @@ module.exports = function(loggers, stats, config) {
 			loggers.op.trace('Successful Request');
 			updateStats.increment('successfulRequest');
 			// start maxResponse timeout
-			var requestTimeoutId = setTimeout(function () {
+			var requestTimeoutId = setTimeout(function() {
 				abortRequest();
 				loggers.op.warn(website.url + ' Timeout');
 				updateStats.increment('timeouts');
@@ -161,8 +160,8 @@ module.exports = function(loggers, stats, config) {
 	};
 	var monitor = {
 		emitter: new EventEmitter,
-		init: function () {
-			config.websites.forEach(function (websiteConfig) {
+		init: function() {
+			config.websites.forEach(function(websiteConfig) {
 				var website = _.defaults({}, websiteConfig, config.defaults);
 				var urlParts = url.parse(website.url);
 				private.websites.push({
@@ -181,22 +180,22 @@ module.exports = function(loggers, stats, config) {
 				private.configValidation(private.websites);
 			});
 		},
-		start: function () {
-			var randomNumber = function (min, max) {
+		start: function() {
+			var randomNumber = function(min, max) {
 				return Math.random() * (max - min) + min;
 			};
-			private.websites.forEach(function (website) {
-				var startId = setTimeout(function () {
+			private.websites.forEach(function(website) {
+				var startId = setTimeout(function() {
 					private.monitor(website);
 				}, randomNumber(0, website.sampleRate) * 1000);
 				private.startIds.push(startId);
 			});
 		},
-		stop: function () {
+		stop: function() {
 			private.startIds.forEach(function(startId) {
 				clearTimeout(startId);
 			});
-			private.websites.forEach(function (website) {
+			private.websites.forEach(function(website) {
 				if(website.stop)
 					website.stop();
 				// removing stop function to free up its closure

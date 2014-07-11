@@ -87,6 +87,21 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 		}
 	};
 	var stats = {
+		registerWebsite: function(url, name, state) {
+			private.websites[url] = name;
+			['up', 'down'].forEach(function(type) {
+				timers.createTimer(url, type);
+			});
+			timers.startTimer(url, state);
+		},
+		updateWebsite: function(url, state) {
+//			if (state == 'up')
+//				timers.stopTimer(url, 'down');
+//			else
+//				timers.stopTimer(url, 'up');
+			timers.stopTimer(url, state == 'up' ? 'down' : 'up');
+			timers.startTimer(url, state);
+		},
 		registerCounters: function(moduleName, countersDef) {
 			countersDef = deepcopy(countersDef);
 			// saves countersDef for specified module
@@ -109,8 +124,6 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 		start: function() {
 			if (!private.loggingId)
 			{
-				logger.info(private.formatCounters()); // TODO remove after testing
-				logger.info(private.formatTimers()); // TODO remove after testing
 				private.loggingId = setInterval(function(){
 					logger.info(private.formatCounters());
 					logger.info(private.formatTimers());
@@ -121,21 +134,6 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 			if (private.loggingId)
 				clearInterval(private.loggingId);
 			private.loggingId = null;
-		},
-		registerWebsite: function(url, name, state) {
-			private.websites[url] = name;
-			['up', 'down'].forEach(function(type) {
-				timers.createTimer(url, type);
-			});
-			timers.startTimer(url, state);
-		},
-		updateWebsite: function(url, state) {
-//			if (state == 'up')
-//				timers.stopTimer(url, 'down');
-//			else
-//				timers.stopTimer(url, 'up');
-			timers.stopTimer(url, state == 'up' ? 'down' : 'up');
-			timers.startTimer(url, state);
 		},
 		getTime: function(url, type) {
 			return private.getTime(timers.getTimerValue(url, type));

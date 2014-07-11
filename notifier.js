@@ -8,7 +8,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 		problemState: false,
 		intervalTimer: null,
 		nagIntervalTimer: null,
-		configValidation: function () {
+		configValidation: function() {
 			if (config.nagIntervalTimerFreq < config.intervalTimerFreq)
 				throw new Error('nagIntervalTimerFreq must be greater than intervalTimerFreq');
 		},

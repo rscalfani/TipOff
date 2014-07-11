@@ -3,7 +3,7 @@ module.exports = function(loggers) {
 		timers: {}
 	};
 	var timers = {
-		createTimer: function (url, type) {
+		createTimer: function(url, type) {
 			if (!(url in private.timers))
 				private.timers[url] = {};
 			private.timers[url][type] = {
@@ -19,7 +19,7 @@ module.exports = function(loggers) {
 			else
 				return timer.total;
 		},
-		startTimer: function (url, type) {
+		startTimer: function(url, type) {
 			var timer = private.timers[url][type];
 			if (!timer.running)
 			{
@@ -27,7 +27,7 @@ module.exports = function(loggers) {
 				timer.running = true;
 			}
 		},
-		stopTimer: function (url, type) {
+		stopTimer: function(url, type) {
 			var timer = private.timers[url][type];
 			if (timer.running)
 			{

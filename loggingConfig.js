@@ -1,13 +1,13 @@
 module.exports = {
 	appenders: [
 		{
+			type: 'console'
+		},
+		{
 			type: 'file',
 			filename: '/tmp/test.log',
 			maxLogSize: 20 * 1024 * 1024,
 			backups: 3
-		},
-		{
-			type: 'console'
 		},
 		{
 			type: 'logLevelFilter',

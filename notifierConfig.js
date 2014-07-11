@@ -1,6 +1,6 @@
 var config = {
 	intervalTimerFreq: 30, // in seconds
-	nagIntervalTimerFreq: 60, // 3600,// in seconds
+	nagIntervalTimerFreq: 3600,// in seconds
 	transport: {
 		host: 'mailtrap.io',
 		port: 465,

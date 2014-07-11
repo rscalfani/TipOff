@@ -1,32 +1,30 @@
 var fs = require('fs');
 
-var config = {
+module.exports = {
 	defaults: {
 		sampleRate: 10, // in seconds
 		maxResponseTime: 10 // in seconds
 	},
 	websites: [
 		{
-			name: 'Facebook',
-			url: 'http://www.facebook.com',
-			sampleRate: 15, // in seconds
-			maxResponseTime: 20, // in seconds
-			patterns: [
-				/error/i,
-				/not found/i
-			],
-			httpOptions: {
-				headers: {
-					'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36'
-				}
-			}
-		},
-		{
 			name: 'Local Host',
 			url: 'http://localhost:8000/test.txt',
 			patterns: [
 				/test/i
 			]
+		},
+		{
+			name: 'Panosoft',
+			url: 'https://demo.panosoft.com/DemoPAPG/logon.do?query=user',
+			patterns: [
+				/invalid user or password/i
+			],
+			post: {
+				'user.usrname': 'Joe',
+				password: 'Mama',
+				score: 0,
+				complexity: 0
+			}
 		},
 //		{
 //			name: 'Vet Pro',
@@ -41,19 +39,19 @@ var config = {
 //			}
 //		},
 		{
-			name: 'Panosoft',
-			url: 'https://demo.panosoft.com/DemoPAPG/logon.do?query=user',
+			name: 'Facebook',
+			url: 'http://www.facebook.com',
+			sampleRate: 15, // in seconds
+			maxResponseTime: 20, // in seconds
 			patterns: [
-				/invalid user or password/i
+				/error/i,
+				/not found/i
 			],
-			post: {
-				'user.usrname': 'Joe',
-				password: 'Mama',
-				score: 0,
-				complexity: 0
+			httpOptions: {
+				headers: {
+					'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36'
+				}
 			}
 		}
 	]
 };
-
-module.exports = config;
