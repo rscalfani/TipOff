@@ -1,7 +1,12 @@
 var _ = require('underscore');
 var nodemailer = require('nodemailer');
 
+var countersDef = {
+	emailsSent: {displayName: 'Emails Sent'}
+};
+
 module.exports = function(loggers, formatter, stats, monitor, config) {
+	var updateStats = stats.registerCounters('notifier', countersDef);
 	var private = {
 		newEvents: [], //{name: name, state: state}
 		states: {}, // url: {name: name, state: state}
@@ -19,6 +24,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 				text: text
 			});
 			transport.sendMail(mailOptions);
+			updateStats.increment('emailsSent');
 		},
 		emailDownReport: function(reportType) {
 			reportType = reportType || 'Down';
