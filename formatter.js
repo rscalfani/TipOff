@@ -1,12 +1,21 @@
 module.exports = function() {
 	var formatter = {
-		getLongestLength: function(list) {
+		getLongestColumnLength: function(list) {
 			var longestLength = 0;
 			list.forEach(function(item) {
 				if (item && item.length > longestLength)
 					longestLength = item.length;
 			});
 			return longestLength;
+		},
+		getLongestLineLength: function(buffer) {
+			return buffer.reduce(function(longest, line) {
+				line = line.trim();
+				if (line.length > longest)
+					return line.length;
+				else
+					return longest;
+			}, 0);
 		},
 		padRight: function(str, length, pad) {
 			str = str || '';
@@ -40,7 +49,7 @@ module.exports = function() {
 			});
 		},
 		addColumnToBuffer: function(buffer, column, columnPad, padFunc) {
-			var longestLength = formatter.getLongestLength(column) + columnPad;
+			var longestLength = formatter.getLongestColumnLength(column) + columnPad;
 			column.forEach(function(item, index) {
 				buffer[index] += padFunc(item, longestLength);
 			});
