@@ -3,16 +3,29 @@ var deepcopy = require('deepcopy');
 module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 	var logger = loggers.stats;
 	var private = {
+		startTime: null,
 		loggingId: null,
 		monitorCounters: {}, // moduleName: countersDef
 		websites: {}, // url: name
+		getStatsUptime: function() {
+			// start time - current time
+			var statsUptime = Date.now() - private.startTime;
+			return private.getTime(statsUptime);
+		},
+		headerDashes: function(buffer) {
+			var longestLength = formatter.getLongestLineLength(buffer);
+			var header = '';
+			for (var i = 0; i < longestLength; ++i)
+				header += '-';
+			return header;
+		},
 		formatCounters: function() {
 			var formatted = '';
 			moduleOrder.forEach(function(moduleName) {
 				var countersDef = private.monitorCounters[moduleName];
 				if (countersDef)
 				{
-					formatted += 'Module: ' + moduleName + '\n';
+					var header = '\n\nModule: ' + moduleName + '\n';
 					var buffer = formatter.createBuffer(Object.keys(countersDef).length);
 					var list = function(key) {
 						return Object.keys(countersDef).map(function(counterName) {
@@ -28,7 +41,8 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 						else
 							return '';
 					}), 10, formatter.padRight);
-					formatted += buffer.join('\n');
+					header += private.headerDashes(buffer);
+					formatted += header + '\n' + buffer.join('\n');
 				}
 			});
 			// return big string to be logged
@@ -49,12 +63,13 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 			var mins = Math.floor(secs / 60);
 			// secs = secs - (mins * how many secs in min) OR secs - mins in secs unit
 			secs -= mins * 60;
-			return days + ' days, ' + formatter.padLeft(hrs, 2, '0') + ':' + formatter.padLeft(mins, 2, '0') + ':' + formatter.padLeft(secs, 2, '0');
+			return days + ' day' + (days != 1 ? 's' : '') + ', ' + formatter.padLeft(hrs, 2, '0') + ':' + formatter.padLeft(mins, 2, '0') + ':' + formatter.padLeft(secs, 2, '0');
 		},
 		formatTimers: function() {
-			var formatted = '\n';
+			var formatted = '';
 			var websites = private.websites;
 			var urls = Object.keys(websites);
+			var header = '\n\nWebsite Stats\n';
 			var buffer = formatter.createBuffer(urls.length);
 			var names = urls.map(function(url) {
 				return websites[url];
@@ -82,7 +97,8 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 			formatter.addRepeatingColumn(buffer, '        (up:');
 			formatter.addColumnToBuffer(buffer, getPercentages(), 1, formatter.padLeft);
 			formatter.addRepeatingColumn(buffer, ')');
-			formatted += buffer.join('\n');
+			header += private.headerDashes(buffer);
+			formatted += header + '\n' + buffer.join('\n');
 			return formatted;
 		}
 	};
@@ -122,9 +138,11 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 			};
 		},
 		start: function() {
+			private.startTime = Date.now();
 			if (!private.loggingId)
 			{
 				private.loggingId = setInterval(function(){
+					logger.info('Stats Since: ' + private.getStatsUptime());
 					logger.info(private.formatCounters());
 					logger.info(private.formatTimers());
 				}, logFreq * 1000);
