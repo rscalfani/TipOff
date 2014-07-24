@@ -18,7 +18,12 @@ var countersDef = {
 module.exports = function(loggers, stats, config) {
 	var updateStats = stats.registerCounters('monitor', countersDef);
 	var private = {
+		startIds: [],
+		websites: [],
+		graceList: {}, // name: gracePeriodEnd (in ms)
 		foundBadPattern: function(patterns, data) {
+			if (!patterns)
+				return null;
 			var matchingString = null;
 			patterns.some(function(pattern) {
 				var result = data.match(pattern);
@@ -35,8 +40,6 @@ module.exports = function(loggers, stats, config) {
 					throw new Error('maxResponseTime of ' + website.hostname + ' must be equal to or greater than its sampleRate');
 			});
 		},
-		startIds: [],
-		websites: [],
 		monitor: function(website) {
 			var requestAborted = false;
 			var waitingToMonitor = false;
@@ -60,6 +63,16 @@ module.exports = function(loggers, stats, config) {
 					private.monitor(website);
 				}, website.sampleRate * 1000);
 			};
+			if(website.name in private.graceList)
+			{
+				if (Date.now() < private.graceList[website.name])
+				{
+					monitorAgain();
+					return;
+				}
+				else
+					monitor.stopGrace(website.name);
+			}
 			// create request
 			var responseData = '';
 			var protocol = (website.protocol == 'http:' ? http : https);
@@ -190,6 +203,7 @@ module.exports = function(loggers, stats, config) {
 				}, randomNumber(0, website.sampleRate) * 1000);
 				private.startIds.push(startId);
 			});
+			loggers.op.info('Starting Monitor');
 		},
 		stop: function() {
 			private.startIds.forEach(function(startId) {
@@ -201,6 +215,16 @@ module.exports = function(loggers, stats, config) {
 				// removing stop function to free up its closure
 				delete website.stop;
 			});
+			loggers.op.info('Stopping Monitor');
+		},
+		// functions called in api
+		startGrace: function(name, mins) {
+			private.graceList[name] = Date.now() + (mins * 60 * 1000);
+			loggers.op.info('Starting Grace Period for ' + name + ' for ' + mins + ' minute' + (mins != 1 ? 's' : ''));
+		},
+		stopGrace: function(name) {
+			delete private.graceList[name];
+			loggers.op.info('Stopping Grace Period for ' + name);
 		}
 	};
 	return monitor;
