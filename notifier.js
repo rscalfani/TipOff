@@ -91,7 +91,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 					});
 					states[url].state = 'down';
 					stats.updateWebsite(url, state);
-					loggers.op.trace('There is a problem with ' + name + ': ' + message);
+					loggers.op.trace('There is a Problem with ' + name + ': ' + message);
 				}
 				if (!private.problemState)
 				{
@@ -133,7 +133,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 					}
 					states[url].state = 'up';
 					stats.updateWebsite(url, state);
-					loggers.op.trace('There are NO problems with ' + name);
+					loggers.op.trace('There are NO Problems with ' + name);
 				}
 				var allNoProblems = Object.keys(states).every(function(url) {
 					return states[url].state == 'up';
@@ -146,11 +146,13 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 					clearInterval(private.intervalTimer);
 				}
 			});
+			loggers.op.info('Starting Notifier');
 		},
 		stop: function() {
 			monitor.emitter.removeAllListeners();
 			clearInterval(private.intervalTimer);
 			clearInterval(private.nagIntervalTimer);
+			loggers.op.info('Stopping Notifier');
 		}
 	};
 	return notifier;
