@@ -1,7 +1,6 @@
 var deepcopy = require('deepcopy');
 
 module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
-	var logger = loggers.stats;
 	var private = {
 		startTime: null,
 		loggingId: null,
@@ -142,16 +141,18 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 			if (!private.loggingId)
 			{
 				private.loggingId = setInterval(function(){
-					logger.info('Stats Since: ' + private.getStatsUptime());
-					logger.info(private.formatCounters());
-					logger.info(private.formatTimers());
+					loggers.stats.info('Stats Since: ' + private.getStatsUptime());
+					loggers.stats.info(private.formatCounters());
+					loggers.stats.info(private.formatTimers());
 				}, logFreq * 1000);
 			}
+			loggers.stats.info('Starting Stats')
 		},
 		stop:function() {
 			if (private.loggingId)
 				clearInterval(private.loggingId);
 			private.loggingId = null;
+			loggers.stats.info('Stopping Stats')
 		},
 		getTime: function(url, type) {
 			return private.getTime(timers.getTimerValue(url, type));
