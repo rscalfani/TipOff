@@ -18,7 +18,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 				throw new Error('nagIntervalTimerFreq must be greater than intervalTimerFreq');
 		},
 		email: function(text, reportType) {
-			var transport = nodemailer.createTransport('SMTP', config.transport);
+			var transport = nodemailer.createTransport(config.transport);
 			var mailOptions = _.extend(config.mailOptions, {
 				subject: 'TipOff: ' + reportType + ' Report',
 				text: text

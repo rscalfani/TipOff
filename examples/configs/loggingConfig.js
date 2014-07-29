@@ -14,8 +14,7 @@ module.exports = {
 				sender: 'rscalfani@gmail.com',
 				recipients: 'rscalfani@gmail.com',
 				subject: 'TipOff: Error Report',
-				transport: 'SMTP',
-				SMTP: {
+				transport: {
 					host: 'mailtrap.io',
 					port: 465,
 					auth: {
