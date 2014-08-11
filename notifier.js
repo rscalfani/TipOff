@@ -44,7 +44,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 			formatter.addColumnToBuffer(downWebsitesBuffer, Object.keys(private.states).map(function(url) {
 				return stats.getTime(url, 'down');
 			}), 1, formatter.padLeft);
-			var emailText = 'DOWN WEBSITES:\n' + downWebsitesBuffer.join('\n');
+			var emailText = 'DOWN WEBSITES (' + downWebsites.length + '):\n' + downWebsitesBuffer.join('\n');
 			if (private.newEvents.length)
 			{
 				var eventsBuffer = formatter.createBuffer(getEventItems('name').length);
