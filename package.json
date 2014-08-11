@@ -1,0 +1,35 @@
+{
+	"name": "tipoff",
+	"version": "0.0.2",
+	"description": "TipOff is a program that monitors websites and notifies you when they go down by emailing a Down Report. It creates detailed logs that include errors, website uptimes/downtimes, and operational statistics.",
+	"main": "app.js",
+	"directories": {
+		"example": "examples",
+		"test": "test"
+	},
+	"dependencies": {},
+	"devDependencies": {},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node server.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/rscalfani/TipOff.git"
+	},
+	"keywords": [
+		"website",
+		"monitor",
+		"notifier",
+		"watchdog"
+	],
+	"author": "Rachel Scalfani",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/rscalfani/TipOff/issues"
+	},
+	"homepage": "https://github.com/rscalfani/TipOff",
+	"bin": {
+		"grace": "bin/grace.js"
+	}
+}
