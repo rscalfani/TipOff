@@ -1,18 +1,18 @@
 var log4js = require('log4js');
-log4js.configure(require('./loggingConfig'));
+log4js.configure(require('./configs/loggingConfig'));
 var loggers = {
 	op: log4js.getLogger('op'),
 	stats: log4js.getLogger('stats')
 };
-var apiConfig = require('./apiConfig');
+var apiConfig = require('./configs/apiConfig');
 var api = require('./api')(loggers, apiConfig);
-var config = require('./config');
+var config = require('./configs/config');
 var timers = require('./timers')(loggers);
 var formatter = require('./formatter')();
 var stats = require('./stats')(['monitor', 'notifier'], loggers, config.statsFreq, timers, formatter);
-var monitorConfig = require('./monitorConfig');
+var monitorConfig = require('./configs/monitorConfig');
 var monitor = require('./monitor')(loggers, stats, monitorConfig);
-var notifierConfig = require('./notifierConfig');
+var notifierConfig = require('./configs/notifierConfig');
 var notifier = require('./notifier')(loggers, formatter, stats, monitor, notifierConfig);
 
 process.on('uncaughtException', function(err) {

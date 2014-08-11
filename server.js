@@ -1,6 +1,6 @@
 var forever = require('forever-monitor');
 var log4js = require('log4js');
-log4js.configure(require('./loggingConfig'));
+log4js.configure(require('./configs/loggingConfig'));
 var logger = log4js.getLogger('forever');
 
 var child = new (forever.Monitor)('app.js', {
