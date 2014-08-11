@@ -14,30 +14,16 @@ module.exports = {
 			]
 		},
 		{
-			name: 'Panosoft',
-			url: 'https://demo.panosoft.com/DemoPAPG/logon.do?query=user',
+			name: 'Dummy',
+			url: 'https://demo.dummy.com/Demo/logon.do',
 			patterns: [
 				/invalid user or password/i
 			],
 			post: {
-				'user.usrname': 'Joe',
-				password: 'Mama',
-				score: 0,
-				complexity: 0
+				user: 'Joe',
+				password: 'Mama'
 			}
 		},
-//		{
-//			name: 'Vet Pro',
-//			url: 'https://localhost:8443/VetProWeb',
-//			sampleRate: 15, // in seconds
-//			maxResponseTime: 20, // in seconds
-//			patterns: [
-//				/exception/i
-//			],
-//			httpOptions: {
-//				ca: [fs.readFileSync('/Users/rscalfani/Downloads/rootCA.pem')]
-//			}
-//		},
 		{
 			name: 'Facebook',
 			url: 'http://www.facebook.com',

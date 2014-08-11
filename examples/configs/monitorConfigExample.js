@@ -15,10 +15,8 @@ module.exports = {
 				/invalid user or password/i
 			],
 			post: {
-				'user.usrname': 'Joe',
-				password: 'Mama',
-				score: 0,
-				complexity: 0
+				user: 'Joe',
+				password: 'Mama'
 			}
 		},
 		{
