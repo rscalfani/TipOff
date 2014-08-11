@@ -90,7 +90,7 @@ There are 5 config files: monitorConfig, notifierConfig, apiConfig, config, & lo
 #Config Examples
 1\. **monitorConfig** example:
 
-```javascript  
+```javascript
 var fs = require('fs'); // file system
 
 module.exports = {
@@ -147,6 +147,7 @@ module.exports = {
 
 2\. **notifierConfig** example:
 
+```javascript
 var config = {
 	intervalTimerFreq: 30, // in seconds
 	nagIntervalTimerFreq: 3600, // in seconds
@@ -163,54 +164,64 @@ var config = {
 	}
 };
 
-module.exports = config;  
+
+module.exports = config;
+```
 
 3\. **apiConfig** example:
 
-		var fs = require('fs'); // filesystem
-		
-		module.exports = {
-			port: 8080,
-			options: {
-				// fs.readFileSync returns contents of the file
+```javascript
+var fs = require('fs'); // filesystem
+
+module.exports = {
+	port: 8080,
+	options: {
+		// fs.readFileSync returns contents of the file
 		//		key: fs.readFileSync('serverPrivateKey.pem'),
 		//		cert: fs.readFileSync('serverCert.pem'),
 		//		ca: fs.readFileSync('caCert.pem')
-			}
-		};
+	}
+};
+```  
+
 4\. **config** example:
 
-		module.exports = {
-			statsFreq: 0.25 * 60 // in seconds
-		};
+```javascript
+module.exports = {
+	statsFreq: 0.25 * 60 // in seconds
+};
+```  
+
 5\. **loggingConfig** example:
 
-		module.exports = {
-			appenders: [
-				{
-					// writes all logs to a log file
-					type: 'file',
-					filename: '/tmp/test.log', // path to log file
-					maxLogSize: 20 * 1024 * 1024,
-					backups: 3
-				},
-				{
-					// will only send emails for errors
-					type: 'logLevelFilter',
-					level: 'ERROR',
-					appender: {
-						type: 'smtp',
-						sender: 'yourself@gmail.com',
-						recipients: ['yourself@gmail.com', 'someone@gmail.com'],
-						subject: 'TipOff: Error Report',
-						transport: {
-							service: 'gmail',
-							auth: {
-								user: 'yourself@gmail.com',
-								pass: 'password'
-							}
-						}
+```javascript
+module.exports = {
+	appenders: [
+		{
+			// writes all logs to a log file
+			type: 'file',
+			filename: '/tmp/test.log', // path to log file
+			maxLogSize: 20 * 1024 * 1024,
+			backups: 3
+		},
+		{
+			// will only send emails for errors
+			type: 'logLevelFilter',
+			level: 'ERROR',
+			appender: {
+				type: 'smtp',
+				sender: 'yourself@gmail.com',
+				recipients: ['yourself@gmail.com', 'someone@gmail.com'],
+				subject: 'TipOff: Error Report',
+				transport: {
+					service: 'gmail',
+					auth: {
+						user: 'yourself@gmail.com',
+						pass: 'password'
 					}
 				}
-			]
-		};
+			}
+		}
+	]
+};
+```  
