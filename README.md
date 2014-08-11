@@ -31,66 +31,66 @@ npm install -g tipoff
 #Config Files
 There are 5 config files: monitorConfig, notifierConfig, apiConfig, config, & loggingConfig.  
 
-1. **monitorConfig** is the config file of the monitoring function in which the following are specified in the defaults and/or in an array of monitored websites:
+1\. **monitorConfig** is the config file of the monitoring function in which the following are specified in the defaults and/or in an array of monitored websites:
 
-	* `name` is the name of the website being monitored.
+* `name` is the name of the website being monitored.
 	
-	* `url` is the url of the website being monitored.
+* `url` is the url of the website being monitored.
 	
-	* `sampleRate` is the rate in seconds that the website will be monitored. For example, a value of 30 means that the website will be checked every 30 seconds.
+* `sampleRate` is the rate in seconds that the website will be monitored. For example, a value of 30 means that the website will be checked every 30 seconds.
 	
-	* `maxResponseTime`is the amount of time in seconds that if the website has not responded by, it is considered down and a timeout error will be logged.
+* `maxResponseTime`is the amount of time in seconds that if the website has not responded by, it is considered down and a timeout error will be logged.
 	
-	* `patterns` are regular expressions that if the website's response matches, it is considered down and a bad patterns error will be logged.
+* `patterns` are regular expressions that if the website's response matches, it is considered down and a bad patterns error will be logged.
 	
-	* `post`is the form data that will be posted.
+* `post`is the form data that will be posted.
 	
-	* `httpOptions` are additional http request options. The most useful ones are `ca` and `headers`. Most of the options will be supplied by TipOff based on the website url.
+* `httpOptions` are additional http request options. The most useful ones are `ca` and `headers`. Most of the options will be supplied by TipOff based on the website url.
 	
-		* *I suggest reading the [Node.js documentation][idNodeJs] to better understand how to configure `httpOptions`.*
+	* *I suggest reading the [Node.js documentation][idNodeJs] to better understand how to configure `httpOptions`.*
 		
 [idNodeJs]: http://nodejs.org/api/http.html#http_http_request_options_callback
-		<p/>
-2. **notifierConfig** is the config file of the notification function in which the following are specified:
 
-	* `intervalTimerFreq` is the frequency in seconds that Down Reports will be sent. A new Down Report will be sent if at least one of the websites is still down and the up/down status of a website has changed.
+2\. **notifierConfig** is the config file of the notification function in which the following are specified:
+
+* `intervalTimerFreq` is the frequency in seconds that Down Reports will be sent. A new Down Report will be sent if at least one of the websites is still down and the up/down status of a website has changed.
 	
-		* A Down Report is an email that contains which websites are down and what has changed since the last Down Report was sent.
+	* A Down Report is an email that contains which websites are down and what has changed since the last Down Report was sent.
 			
-		* An Up Report will be sent when all of the websites come back up.
+	* An Up Report will be sent when all of the websites come back up.
 		
-	* `nagIntervalTimerFreq` is the frequency in seconds that Nag Reports will be sent as a reminder if none of the website statuses have changed.
+* `nagIntervalTimerFreq` is the frequency in seconds that Nag Reports will be sent as a reminder if none of the website statuses have changed.
 	
-		* A Nag Report is identical to the last sent Down Report.
-		<p/>
-	* `transport` is used to send emails via Nodemailer. `host`, `port`, & `auth` OR `service` and `auth` must be specified.
+	* A Nag Report is identical to the last sent Down Report
+	<p/>	
+* `transport` is used to send emails via Nodemailer. `host`, `port`, & `auth` OR `service` and `auth` must be specified.
 	
-		* *I suggest reading the [Nodemailer documentation][idNodemailer] to better understand how to configure `transport`.*
+	* *I suggest reading the [Nodemailer documentation][idNodemailer] to better understand how to configure `transport`.*
 		
-[idNodemailer]: https://github.com/andris9/Nodemailer
-		<p/>
-	* `mailOptions` only requires `from` and `to`. Do not specify `subject` or `text`. They will be supplied by TipOff at runtime.
+[idNodemailer]: https://github.com/andris9/Nodemailer  
 	<p/>
-3. **apiConfig** is the config file of the API web server in which `port` & `options` are specified.
-
-	If `options` is left blank, an http server will be created. At least `key` & `cert` must be specified to create an https server (`ca` can be added if you want to use a self-signed certificate).
+* `mailOptions` only requires `from` and `to`. Do not specify `subject` or `text`. They will be supplied by TipOff at runtime.
 	
-4. **config** is the main config file in which the following is specified:
+3\. **apiConfig** is the config file of the API web server in which `port` & `options` are specified.
 
-	* `statsFreq` is the frequency in seconds that the operational statistics will be logged.
-	<p/>
-5. **loggingConfig** is the config file of the loggers, which were created with log4js.
-
-	* A file appender and an Error Report can be configured (see the corresponding example below).
+* If `options` is left blank, an http server will be created. At least `key` & `cert` must be specified to create an https server (`ca` can be added if you want to use a self-signed certificate).
 	
-	* *I suggest reading the configuration section of the [log4js documentation][idLog4js] to better understand how to configure loggingConfig.*
+4\. **config** is the main config file in which the following is specified:
+
+* `statsFreq` is the frequency in seconds that the operational statistics will be logged.
+
+5\. **loggingConfig** is the config file of the loggers, which were created with log4js.
+
+* A file appender and an Error Report can be configured (see the corresponding example below).
+
+* *I suggest reading the configuration section of the [log4js documentation][idLog4js] to better understand how to configure loggingConfig.*
 
 [idLog4js]: https://github.com/nomiddlename/log4js-node
 
 #Config Examples
-1. **monitorConfig** example:
+1\. **monitorConfig** example:
 
-```javascript
+```javascript  
 var fs = require('fs'); // file system
 
 module.exports = {
@@ -145,26 +145,27 @@ module.exports = {
 };
 ```  
 
-2. **notifierConfig** example:
+2\. **notifierConfig** example:
 
-		var config = {
-			intervalTimerFreq: 30, // in seconds
-			nagIntervalTimerFreq: 3600, // in seconds
-			transport: {
-				service: 'gmail',
-				auth: {
-					user: 'yourself@gmail.com',
-					pass: 'password'
-				}
-			},
-			mailOptions: {
-				from: 'yourself@gmail.com',
-				to: ['yourself@gmail.com', 'someone@gmail.com']
-			}
-		};
-		
-		module.exports = config;
-3. **apiConfig** example:
+var config = {
+	intervalTimerFreq: 30, // in seconds
+	nagIntervalTimerFreq: 3600, // in seconds
+	transport: {
+		service: 'gmail',
+		auth: {
+			user: 'yourself@gmail.com',
+			pass: 'password'
+		}
+	},
+	mailOptions: {
+		from: 'yourself@gmail.com',
+		to: ['yourself@gmail.com', 'someone@gmail.com']
+	}
+};
+
+module.exports = config;  
+
+3\. **apiConfig** example:
 
 		var fs = require('fs'); // filesystem
 		
@@ -177,12 +178,12 @@ module.exports = {
 		//		ca: fs.readFileSync('caCert.pem')
 			}
 		};
-4. **config** example:
+4\. **config** example:
 
 		module.exports = {
 			statsFreq: 0.25 * 60 // in seconds
 		};
-5. **loggingConfig** example:
+5\. **loggingConfig** example:
 
 		module.exports = {
 			appenders: [
