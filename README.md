@@ -92,9 +92,7 @@ There are 5 config files: monitorConfig, notifierConfig, apiConfig, config, & lo
 
 ```javascript
 var fs = require('fs'); // file system
-```
 
-```javascript
 module.exports = {
 	defaults: { // applies sampleRate and maxResponseTime if not specified
 		sampleRate: 10, // in seconds
