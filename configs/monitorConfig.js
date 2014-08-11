@@ -1,5 +1,3 @@
-var fs = require('fs');
-
 module.exports = {
 	defaults: {
 		sampleRate: 10, // in seconds
