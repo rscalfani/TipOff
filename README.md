@@ -16,7 +16,18 @@ TipOff is started by calling Node app.js OR Node server.js, which uses [forever-
 [idForeverMonitor]: https://github.com/nodejitsu/forever-monitor
 
 #Installation
-npm…
+locally  
+
+```javascript
+test
+```
+
+locally   
+	
+	npm install tipoff
+globally   
+	
+	npm install -g tipoff
 
 #Config Files
 There are 5 config files: monitorConfig, notifierConfig, apiConfig, config, & loggingConfig.  
