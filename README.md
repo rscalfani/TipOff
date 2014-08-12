@@ -26,7 +26,7 @@ TipOff is started on the command line by running:
 [idForeverMonitor]: https://github.com/nodejitsu/forever-monitor
 
 #Config Files
-There are 6 config files: monitorConfig, notifierConfig, apiConfig, config, & loggingConfig.  
+There are 6 config files: monitorConfig, notifierConfig, apiConfig, config, loggingConfig, & serverConfig.  
 
 1\. **monitorConfig** is the config file of the monitoring function in which the following are specified in the defaults and/or in an array of monitored websites:
 
@@ -84,7 +84,9 @@ There are 6 config files: monitorConfig, notifierConfig, apiConfig, config, & lo
 
 [idLog4js]: https://github.com/nomiddlename/log4js-node
   
-6\. **serverConfig** is the config file of the server.
+6\. **serverConfig** is the config file of the server in which `pidFile`, `logFile`, `outFile`, `errFile`, `watch`, and `watchDirectory` are specified.  
+  
+* *If you decide to run server.js instead of app.js, I suggest reading the [forever-monitor][idForeverMonitor] to better understand how to configure serverConfig.*
 
 #Config Examples
 1\. **monitorConfig** example:
@@ -222,6 +224,19 @@ module.exports = {
 			}
 		}
 	]
+};
+```  
+
+6\. **serverConfig** example:  
+
+```javascript
+module.exports = {
+	pidFile: '/tmp/forever.pid',
+	logFile: '/tmp/forever.log',
+	outFile: '/tmp/forever.out',
+	errFile: '/tmp/forever.err',
+	watch: true,
+	watchDirectory: '/tmp/TipOff.watch'
 };
 ```
 
