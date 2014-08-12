@@ -26,7 +26,7 @@ TipOff is started on the command line by running:
 [idForeverMonitor]: https://github.com/nodejitsu/forever-monitor
 
 #Config Files
-There are 5 config files: monitorConfig, notifierConfig, apiConfig, config, & loggingConfig.  
+There are 6 config files: monitorConfig, notifierConfig, apiConfig, config, & loggingConfig.  
 
 1\. **monitorConfig** is the config file of the monitoring function in which the following are specified in the defaults and/or in an array of monitored websites:
 
@@ -58,8 +58,8 @@ There are 5 config files: monitorConfig, notifierConfig, apiConfig, config, & lo
 		
 * `nagIntervalTimerFreq` is the frequency in seconds that Nag Reports will be sent as a reminder if none of the website statuses have changed.
 	
-	* A Nag Report is identical to the last sent Down Report
-	<p/>	
+	* A Nag Report is identical to the last sent Down Report  
+
 * `transport` is used to send emails via Nodemailer. `host`, `port`, & `auth` OR `service` and `auth` must be specified.
 	
 	* *I suggest reading the [Nodemailer documentation][idNodemailer] to better understand how to configure `transport`.*
@@ -83,6 +83,8 @@ There are 5 config files: monitorConfig, notifierConfig, apiConfig, config, & lo
 * *I suggest reading the configuration section of the [log4js documentation][idLog4js] to better understand how to configure loggingConfig.*
 
 [idLog4js]: https://github.com/nomiddlename/log4js-node
+  
+6\. **serverConfig** is the config file of the server.
 
 #Config Examples
 1\. **monitorConfig** example:
