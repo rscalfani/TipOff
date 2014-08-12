@@ -17,7 +17,7 @@ npm install -g tipoff
 ```
 
 #Execution
-TipOff is started on the command line by running ```node /usr/local/lib/node_modules/tipoff/app.js``` OR ```node /usr/local/lib/node_modules/tipoff/server.js```, which uses [forever-monitor][idForeverMonitor] to run TipOff continously (aka forever).
+TipOff is started on the command line by running `node /usr/local/lib/node_modules/tipoff/app.js` OR `node /usr/local/lib/node_modules/tipoff/server.js`, which uses [forever-monitor][idForeverMonitor] to run TipOff continously (aka forever).
 
 [idForeverMonitor]: https://github.com/nodejitsu/forever-monitor
 
