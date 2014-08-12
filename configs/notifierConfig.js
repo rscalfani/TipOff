@@ -1,4 +1,4 @@
-var config = {
+module.exports = {
 	intervalTimerFreq: 30, // in seconds
 	nagIntervalTimerFreq: 3600, // in seconds
 	transport: {
@@ -14,5 +14,3 @@ var config = {
 		to: 'rscalfani@gmail.com'
 	}
 };
-
-module.exports = config;
