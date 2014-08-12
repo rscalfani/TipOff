@@ -11,22 +11,15 @@ The following features are supported:
 * Nag Report emails for extended website downtimes
 * Monitoring websites with self-signed certificates
 
-TipOff is started by calling Node app.js OR Node server.js, which uses [forever-monitor][idForeverMonitor] to run TipOff continously (aka forever).
-
-[idForeverMonitor]: https://github.com/nodejitsu/forever-monitor
-
 #Installation
-locally  
-
-```javascript
-npm install tipoff
-```  
-
-globally  
-
 ```javascript
 npm install -g tipoff
 ```
+
+#Execution
+TipOff is started on the command line by running ```node /usr/local/lib/node_modules/tipoff/app.js``` OR ```node /usr/local/lib/node_modules/tipoff/server.js```, which uses [forever-monitor][idForeverMonitor] to run TipOff continously (aka forever).
+
+[idForeverMonitor]: https://github.com/nodejitsu/forever-monitor
 
 #Config Files
 There are 5 config files: monitorConfig, notifierConfig, apiConfig, config, & loggingConfig.  
@@ -73,8 +66,8 @@ There are 5 config files: monitorConfig, notifierConfig, apiConfig, config, & lo
 	
 3\. **apiConfig** is the config file of the API web server in which `port` & `options` are specified.
 
-* If `options` is left blank, an http server will be created. At least `key` & `cert` must be specified to create an https server (`ca` can be added if you want to use a self-signed certificate).
-	
+* If no `options` are specified, an http server will be created. At least `key` & `cert` must be specified in `options` to create an https server (`ca` can be added if you want to use a self-signed certificate).
+
 4\. **config** is the main config file in which the following is specified:
 
 * `statsFreq` is the frequency in seconds that the operational statistics will be logged.
@@ -226,4 +219,25 @@ module.exports = {
 };
 ```
 
+#API
+Two requests are supported by the API: `startGrace` and `stopGrace`. A client must give the API an HTTP or HTTPS GET request to start or stop a grace period.  
+
+* A grace period is the amount of time in minutes that TipOff stops monitoring a specified website so that reports will not be sent even if it goes down. This is useful during website redeployment.
+
+##startGrace
+The following URL starts a grace period for **myWebsite** for a period of **5** minutes:
+
+* `https://localhost:8443/startGrace?website=myWebsite&period=5`
+
+This example assumes that the API is an HTTPS server i.e. `options` were specified in the apiConfig and that TipOff is running on the local machine on port 8443.
+
+##stopGrace
+The following URL stops a grace period for **myWebsite**:
+
+* `http://localhost:8080/stopGrace?website=myWebsite`
+
+This example assumes that the API is an HTTP server i.e. no `options` were specified in the apiConfig and that TipOff is running on the local machine on port 8080.
+
 #Contact
+
+Send comments and questions to <rscalfani@gmail.com>.
