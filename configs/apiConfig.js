@@ -1,4 +1,4 @@
-var fs = require('fs');
+//var fs = require('fs');
 
 module.exports = {
 	port: 8080,
