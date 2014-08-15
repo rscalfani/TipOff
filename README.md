@@ -16,14 +16,27 @@ The following features are supported:
 npm install -g tipoff
 ```
 
+*(if you get any errors installing TipOff, make sure that you have the latest version of npm)*
+
 #Execution
 TipOff is started on the command line by running:
   
-* `node /usr/local/lib/node_modules/tipoff/app.js` OR
+* `node /usr/local/lib/node_modules/tipoff/app.js --configPath <path>` OR
   
-* `node /usr/local/lib/node_modules/tipoff/server.js`, which uses [forever-monitor][idForeverMonitor] to run TipOff continously (aka forever).
+* `node /usr/local/lib/node_modules/tipoff/server.js --configPath <path>`, which uses [forever-monitor][idForeverMonitor] to run TipOff continously (aka forever).
 
 [idForeverMonitor]: https://github.com/nodejitsu/forever-monitor
+
+`<path>` is the path to directory that contains only TipOff config files, viz.:
+
+* apiConfig.js
+* config.js
+* loggingConfig.js
+* monitorConfig.js
+* notifierConfig.js
+* serverConfig.js
+
+*(see [Config Examples](#configExamples))*
 
 #Config Files
 There are 6 config files: monitorConfig, notifierConfig, apiConfig, config, loggingConfig, & serverConfig.  
@@ -88,6 +101,7 @@ There are 6 config files: monitorConfig, notifierConfig, apiConfig, config, logg
   
 * *If you decide to run server.js instead of app.js, I suggest reading the [forever-monitor][idForeverMonitor] to better understand how to configure serverConfig.*
 
+<div id="configExamples"/>
 #Config Examples
 1\. **monitorConfig** example:
 
@@ -172,15 +186,15 @@ module.exports = config;
 3\. **apiConfig** example:
 
 ```javascript
-var fs = require('fs'); // filesystem
+// var fs = require('fs'); // filesystem
 
 module.exports = {
 	port: 8080,
 	options: {
-		// fs.readFileSync returns contents of the file
-		//		key: fs.readFileSync('serverPrivateKey.pem'),
-		//		cert: fs.readFileSync('serverCert.pem'),
-		//		ca: fs.readFileSync('caCert.pem')
+	//	fs.readFileSync returns contents of the file
+		//	key: fs.readFileSync('serverPrivateKey.pem'),
+		//	cert: fs.readFileSync('serverCert.pem'),
+		//	ca: fs.readFileSync('caCert.pem')
 	}
 };
 ```  
