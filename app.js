@@ -64,7 +64,7 @@ else
 	if (!fs.existsSync('configs'))
 		fs.mkdirSync('configs', 0755);
 	var exec = require('child_process').exec;
-	exec('cp ' + argv.configPath + '/*onfig.js configs/', function(err, stdout, stderr) {
+	exec('cp ' + argv.configPath + '/*onfig.js ' + __dirname + '/configs/', function(err, stdout, stderr) {
 		if (err) {
 			console.log(stdout);
 			console.log(stderr);
