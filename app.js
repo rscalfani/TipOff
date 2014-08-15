@@ -24,7 +24,9 @@ var notifier = require('./notifier')(loggers, formatter, stats, monitor, notifie
 
 process.on('uncaughtException', function (err) {
 	loggers.op.fatal('uncaught exception: ' + err.stack);
-	process.exit(1);
+	log4js.shutdown(function () {
+		process.exit(1);
+	});
 });
 
 var exit = function (type) {
