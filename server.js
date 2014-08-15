@@ -36,7 +36,7 @@ var argv = require('optimist')
 var fs = require('fs');
 var configs = __dirname + '/configs';
 if (!fs.existsSync(configs))
-	fs.mkdirSync(configs, 0755);
+	fs.mkdirSync(configs, 0775);
 var exec = require('child_process').exec;
 exec('cp ' + argv.configPath + '/*onfig.js ' + configs + '/', function(err, stdout, stderr) {
 	if (err) {
