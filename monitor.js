@@ -37,7 +37,7 @@ module.exports = function(loggers, stats, config) {
 		configValidation: function(websites) {
 			websites.forEach(function(website) {
 				if (website.maxResponseTime < website.sampleRate)
-					throw new Error('maxResponseTime of ' + website.hostname + ' must be equal to or greater than its sampleRate');
+					throw new Error('sampleRate of ' + website.hostname + ' must be equal to or greater than its maxResponseTime');
 			});
 		},
 		monitor: function(website) {
