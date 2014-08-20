@@ -70,6 +70,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 			private.configValidation();
 		},
 		start: function() {
+			loggers.op.warn('Starting Notifier');
 			monitor.emitter.on('problem', function(name, url, message) {
 				var states = private.states;
 				var state = 'down';
@@ -146,13 +147,12 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 					clearInterval(private.intervalTimer);
 				}
 			});
-			loggers.op.info('Starting Notifier');
 		},
 		stop: function() {
+			loggers.op.warn('Stopping Notifier');
 			monitor.emitter.removeAllListeners();
 			clearInterval(private.intervalTimer);
 			clearInterval(private.nagIntervalTimer);
-			loggers.op.info('Stopping Notifier');
 		}
 	};
 	return notifier;

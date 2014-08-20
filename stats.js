@@ -137,6 +137,7 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 			};
 		},
 		start: function() {
+			loggers.op.warn('Starting Stats');
 			private.startTime = Date.now();
 			if (!private.loggingId)
 			{
@@ -146,13 +147,12 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 					loggers.stats.info(private.formatTimers());
 				}, logFreq * 1000);
 			}
-			loggers.stats.info('Starting Stats')
 		},
 		stop:function() {
+			loggers.op.warn('Stopping Stats');
 			if (private.loggingId)
 				clearInterval(private.loggingId);
 			private.loggingId = null;
-			loggers.stats.info('Stopping Stats')
 		},
 		getTime: function(url, type) {
 			return private.getTime(timers.getTimerValue(url, type));

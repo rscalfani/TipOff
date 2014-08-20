@@ -194,6 +194,7 @@ module.exports = function(loggers, stats, config) {
 			});
 		},
 		start: function() {
+			loggers.op.warn('Starting Monitor');
 			var randomNumber = function(min, max) {
 				return Math.random() * (max - min) + min;
 			};
@@ -203,19 +204,18 @@ module.exports = function(loggers, stats, config) {
 				}, randomNumber(0, website.sampleRate) * 1000);
 				private.startIds.push(startId);
 			});
-			loggers.op.info('Starting Monitor');
 		},
 		stop: function() {
 			private.startIds.forEach(function(startId) {
 				clearTimeout(startId);
 			});
 			private.websites.forEach(function(website) {
+				loggers.op.warn('Stopping Monitor');
 				if(website.stop)
 					website.stop();
 				// removing stop function to free up its closure
 				delete website.stop;
 			});
-			loggers.op.info('Stopping Monitor');
 		},
 		// functions called in api
 		startGrace: function(name, mins) {

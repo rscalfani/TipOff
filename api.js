@@ -10,8 +10,8 @@ module.exports = function(loggers, config) {
 		stopping: false,
 		listening: false,
 		stop: function() {
+			loggers.op.warn('Stopping API');
 			private.server.close();
-			loggers.op.info('Stopping API');
 		}
 	};
 	var api = {
@@ -19,6 +19,7 @@ module.exports = function(loggers, config) {
 			private.apiInterface = apiInterface;
 		},
 		start: function() {
+			loggers.op.warn('Starting API');
 			var createServer = function(options, handler) {
 				if (!options || Object.keys(options).length == 0)
 					return http.createServer(handler);
