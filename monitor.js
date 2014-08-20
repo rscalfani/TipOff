@@ -206,11 +206,11 @@ module.exports = function(loggers, stats, config) {
 			});
 		},
 		stop: function() {
+			loggers.op.warn('Stopping Monitor');
 			private.startIds.forEach(function(startId) {
 				clearTimeout(startId);
 			});
 			private.websites.forEach(function(website) {
-				loggers.op.warn('Stopping Monitor');
 				if(website.stop)
 					website.stop();
 				// removing stop function to free up its closure
