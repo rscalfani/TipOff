@@ -110,10 +110,6 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 			timers.startTimer(url, state);
 		},
 		updateWebsite: function(url, state) {
-//			if (state == 'up')
-//				timers.stopTimer(url, 'down');
-//			else
-//				timers.stopTimer(url, 'up');
 			timers.stopTimer(url, state == 'up' ? 'down' : 'up');
 			timers.startTimer(url, state);
 		},

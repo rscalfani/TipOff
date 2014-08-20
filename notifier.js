@@ -124,7 +124,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 				if (states[url].state != 'up')
 				{
 					clearInterval(private.nagIntervalTimer);
-					if (!firstTime) // don't want website is up in events unless the website went down first
+					if (!firstTime) // don't want to put 'website is up' in events unless the website went down first
 					{
 						private.newEvents.push({
 							name: name,
