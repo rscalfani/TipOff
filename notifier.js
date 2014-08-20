@@ -18,10 +18,11 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 				throw new Error('nagIntervalTimerFreq must be greater than intervalTimerFreq');
 		},
 		email: function(text, reportType) {
+			text = text.replace(/\n/g, '<br/>').replace(/ /g, '&nbsp;');
 			var transport = nodemailer.createTransport(config.transport);
 			var mailOptions = _.extend(config.mailOptions, {
 				subject: 'TipOff: ' + reportType + ' Report',
-				text: text
+				html: '<div style="font-family: \'Courier New\', Courier, monospace">' + text + '</div>'
 			});
 			transport.sendMail(mailOptions);
 			updateStats.increment('emailsSent');
