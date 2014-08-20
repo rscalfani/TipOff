@@ -67,7 +67,10 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 		formatTimers: function() {
 			var formatted = '';
 			var websites = private.websites;
-			var urls = Object.keys(websites);
+			var urls = Object.keys(websites).sort(function(url1, url2) {
+				// sort URLs by their name
+				return websites[url1].localeCompare(websites[url2]);
+			});
 			var header = '\n\nWebsite Stats\n';
 			var buffer = formatter.createBuffer(urls.length);
 			var names = urls.map(function(url) {
