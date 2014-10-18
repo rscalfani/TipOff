@@ -29,9 +29,10 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 		},
 		emailDownReport: function(reportType) {
 			reportType = reportType || 'Down';
-			var downWebsites = Object.keys(private.states).filter(function(url) {
+			var downUrls = Object.keys(private.states).filter(function(url) {
 				return private.states[url].state == 'down';
-			}).map(function(url) {
+			});
+			var downWebsites = downUrls.map(function(url) {
 				return private.states[url].name;
 			});
 			var getEventItems = function(eventItem) {
@@ -42,7 +43,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 			var downWebsitesBuffer = formatter.createBuffer(downWebsites.length);
 			formatter.addColumnToBuffer(downWebsitesBuffer, downWebsites, 5, formatter.padRight);
 			formatter.addRepeatingColumn(downWebsitesBuffer, '    ');
-			formatter.addColumnToBuffer(downWebsitesBuffer, Object.keys(private.states).map(function(url) {
+			formatter.addColumnToBuffer(downWebsitesBuffer, downUrls.map(function(url) {
 				return stats.getTime(url, 'down');
 			}), 1, formatter.padLeft);
 			var emailText = 'DOWN WEBSITES (' + downWebsites.length + '):\n' + downWebsitesBuffer.join('\n');
