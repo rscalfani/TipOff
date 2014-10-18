@@ -19,7 +19,14 @@ var req = https.request(options, function(res) {
 		console.log("Response Error: " + err.message);
 	});
 });
+var reqTimeout = false;
+req.setTimeout(50, function() {
+	console.log('request timeout');
+	req.socket.destroy();
+	reqTimeout = true;
+});
 req.on('error', function(err) {
-	console.log("Request Error: " + err.message);
+	if (!reqTimeout)
+		console.log("Request Error: " + err.message);
 });
 req.end();
