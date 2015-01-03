@@ -11,6 +11,7 @@ var countersDef = {
 	timeouts: {displayName: 'Timeouts'},
 	badPatternErrors: {displayName: 'Bad Pattern Errors'},
 	badResponse: {displayName: 'Bad Response'},
+	retries: {displayName: 'Retries'},
 	successfulResponse: {displayName: 'Successful Response'},
 	successfulRequest: {displayName: 'Successful Request'}
 };
@@ -36,18 +37,35 @@ module.exports = function(loggers, stats, config) {
 		},
 		configValidation: function(websites) {
 			websites.forEach(function(website) {
-				if (website.sampleRate < website.maxResponseTime)
-					throw new Error('sampleRate of ' + website.hostname + ' must be equal to or greater than its maxResponseTime');
+				if (website.attempts <= 0)
+					throw new Error ('attempts must be greater than 0');
+				if (website.sampleRate < website.maxResponseTime * (website.attempts || 1))
+					throw new Error('sampleRate of ' + website.hostname + ' must be equal to or greater than its maxResponseTime * attempts');
 			});
 		},
-		monitor: function(website) {
+		monitor: function(website, attempt) {
+			attempt = attempt || 1;
 			var requestAborted = false;
+			var socketDestroyed = false;
 			var waitingToMonitor = false;
 			var waitingTimeoutId;
+			var retryOrError = function(errMessage, counterName, problemType) {
+				if (!website.attempts || attempt == website.attempts) {
+					loggers.op.warn(errMessage);
+					updateStats.increment(counterName);
+					monitor.emitter.emit('problem', website.name, website.url, problemType);
+					monitorAgain();
+				}
+				else
+				{
+					loggers.op.warn('Retrying ' + website.url);
+					updateStats.increment('retries');
+					private.monitor(website, attempt + 1);
+				}
+			};
 			var abortRequest = function() {
 				req.abort();
 				requestAborted = true;
-				clearTimeout(requestTimeoutId);
 			};
 			website.stop = function() {
 				// waiting to monitor again
@@ -96,20 +114,14 @@ module.exports = function(loggers, stats, config) {
 			var req = protocol.request(options, function(res) {
 				// create response error handler
 				res.on('error', function(err) {
-					loggers.op.warn('Response Error: ' + err.message);
-					updateStats.increment('responseErrors');
-					monitor.emitter.emit('problem', website.name, website.url, 'Response Error');
-					clearTimeout(requestTimeoutId);
-					monitorAgain();
+					retryOrError('Response Error: ' + err.message, 'responseErrors', 'Response Error');
 				});
 				// receive partial data
 				res.on('data', function(chunk) {
 					responseData += chunk;
-					clearTimeout(requestTimeoutId);
 				});
 				// received all data
 				res.on('end', function() {
-					clearTimeout(requestTimeoutId);
 					loggers.op.trace('Successful Response');
 					updateStats.increment('successfulResponse');
 					if (res.statusCode == 200)
@@ -117,13 +129,12 @@ module.exports = function(loggers, stats, config) {
 						// check patterns
 						var matchingString = private.foundBadPattern(website.patterns, responseData);
 						if (matchingString != null)
-						{
-							loggers.op.warn(website.url + ' (Found Bad Patterns: ' + matchingString + ')');
-							updateStats.increment('badPatternErrors');
-							monitor.emitter.emit('problem', website.name, website.url, 'Found Bad Patterns');
-						}
+							retryOrError(website.url + ' (Found Bad Patterns: ' + matchingString + ')', 'badPatternErrors', 'Found Bad Patterns');
 						else
+						{
 							monitor.emitter.emit('no problems', website.name, website.url);
+							monitorAgain();
+						}
 					}
 					else if ([301, 302, 307, 308].indexOf(res.statusCode) != -1 )
 					{
@@ -133,27 +144,24 @@ module.exports = function(loggers, stats, config) {
 						website.hostname = urlParts.hostname;
 						website.port = urlParts.port;
 						website.path = urlParts.path;
+						monitorAgain();
 					}
 					else
-					{
-						loggers.op.warn(website.url + ' (Bad Response: ' + res.statusCode + ')');
-						updateStats.increment('badResponse');
-						monitor.emitter.emit('problem', website.name, website.url, 'Bad Response');
-					}
-					monitorAgain();
+						retryOrError(website.url + ' (Bad Response: ' + res.statusCode + ')', 'badResponse', 'Bad Response');
 				});
+			});
+			req.setTimeout(website.maxResponseTime * 1000, function() {
+				req.socket.destroy();
+				socketDestroyed = true;
+				retryOrError(website.url + ' Timeout', 'timeouts', 'Timeout');
 			});
 			// create request error handler
 			req.on('error', function(err) {
-				// sometimes req.abort() causes an error
+				// req.abort() and socket.destroy() causes an error
 				// in that case, do nothing
-				if (requestAborted)
+				if (requestAborted || socketDestroyed)
 					return;
-				loggers.op.warn('Request Error: ' + err.message);
-				updateStats.increment('requestErrors');
-				monitor.emitter.emit('problem', website.name, website.url, 'Request Error');
-				clearTimeout(requestTimeoutId);
-				monitorAgain();
+				retryOrError('Request Error: ' + err.message, 'requestErrors', 'Request Error');
 			});
 			if (method == 'POST')
 				req.write(postData);
@@ -161,14 +169,6 @@ module.exports = function(loggers, stats, config) {
 			req.end();
 			loggers.op.trace('Successful Request');
 			updateStats.increment('successfulRequest');
-			// start maxResponse timeout
-			var requestTimeoutId = setTimeout(function() {
-				abortRequest();
-				loggers.op.warn(website.url + ' Timeout');
-				updateStats.increment('timeouts');
-				monitor.emitter.emit('problem', website.name, website.url, 'Timeout');
-				monitorAgain();
-			}, website.maxResponseTime * 1000);
 		}
 	};
 	var monitor = {
@@ -186,6 +186,7 @@ module.exports = function(loggers, stats, config) {
 					path: urlParts.path,
 					sampleRate: website.sampleRate,
 					maxResponseTime: website.maxResponseTime,
+					attempts: website.attempts,
 					patterns: website.patterns,
 					post: website.post,
 					httpOptions: website.httpOptions
