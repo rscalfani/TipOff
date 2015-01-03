@@ -1,5 +1,21 @@
 module.exports = function() {
 	var formatter = {
+		addCommas: function (number) {
+			var withCommas = '';
+			var counter = 0;
+
+			number = number.toString();
+			for (var index = number.length - 1; index >= 0; --index) {
+				if (counter == 3)
+				{
+					withCommas = ',' + withCommas;
+					counter = 0;
+				}
+				withCommas = number[index] + withCommas;
+				++counter;
+			}
+			return withCommas;
+		},
 		getLongestColumnLength: function(list) {
 			var longestLength = 0;
 			list.forEach(function(item) {
