@@ -32,7 +32,7 @@ module.exports = function(moduleOrder, loggers, logFreq, timers, formatter) {
 						});
 					};
 					formatter.addColumnToBuffer(buffer, list('displayName'), 10, formatter.padRight);
-					formatter.addColumnToBuffer(buffer, list('counter').map(String), 10, formatter.padLeft);
+					formatter.addColumnToBuffer(buffer, list('counter').map(formatter.addCommas), 10, formatter.padLeft);
 					formatter.addRepeatingColumn(buffer, '          ');
 					formatter.addColumnToBuffer(buffer, list('lastUpdated').map(function(ticks) {
 						if (ticks)
