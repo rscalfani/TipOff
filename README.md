@@ -49,11 +49,13 @@ There are 6 config files: monitorConfig, notifierConfig, apiConfig, config, logg
 	
 * `sampleRate` is the rate in seconds that the website will be monitored. For example, a value of 30 means that the website will be checked every 30 seconds.
 	
-* `maxResponseTime`is the amount of time in seconds that if the website has not responded by, it is considered down and a timeout error will be logged.
+* `maxResponseTime` is the amount of time in seconds that if the website has not responded by, it is considered down and a timeout error will be logged.
+	
+* `attempts` is the number of times a website is accessed before an error is logged.
 	
 * `patterns` are regular expressions that if the website's response matches, it is considered down and a bad patterns error will be logged.
 	
-* `post`is the form data that will be posted.
+* `post` is the form data that will be posted.
 	
 * `httpOptions` are additional http request options. The most useful ones are `ca` and `headers`. Most of the options will be supplied by TipOff based on the website url.
 	
@@ -71,8 +73,8 @@ There are 6 config files: monitorConfig, notifierConfig, apiConfig, config, logg
 		
 * `nagIntervalTimerFreq` is the frequency in seconds that Nag Reports will be sent as a reminder if none of the website statuses have changed.
 	
-	* A Nag Report is identical to the last sent Down Report  
-
+	* A Nag Report is identical to the last sent Down Report
+	<p/>
 * `transport` is used to send emails via Nodemailer. `host`, `port`, & `auth` OR `service` and `auth` must be specified.
 	
 	* *I suggest reading the [Nodemailer documentation][idNodemailer] to better understand how to configure `transport`.*
@@ -109,16 +111,15 @@ There are 6 config files: monitorConfig, notifierConfig, apiConfig, config, logg
 var fs = require('fs'); // file system
 
 module.exports = {
-	defaults: { // applies sampleRate and maxResponseTime if not specified
-		sampleRate: 10, // in seconds
-		maxResponseTime: 10 // in seconds
+	defaults: { // applies sampleRate, maxResponseTime, and attempts if not specified
+		sampleRate: 20, // in seconds
+		maxResponseTime: 10, // in seconds
+		attempts: 2
 	},
 	websites: [
 		{
 			name: 'Website',
 			url: 'https://website.com/path',
-			// sampleRate: 10 //in seconds
-			// maxResponseTime: 10 // in seconds
 			patterns: [
 				/invalid user or password/i
 			],
@@ -130,8 +131,8 @@ module.exports = {
 		{
 			name: 'Website Self-Signed',
 			url: 'https://localhost:8443/path?query=1&sort=descending',
-			sampleRate: 15, // in seconds
-			maxResponseTime: 20, // in seconds
+			sampleRate: 20, // in seconds
+			maxResponseTime: 5, // in seconds
 			patterns: [
 				/exception/i
 			],
@@ -142,8 +143,9 @@ module.exports = {
 		{
 			name: 'Facebook',
 			url: 'http://www.facebook.com',
-			sampleRate: 15, // in seconds
-			maxResponseTime: 20, // in seconds
+			sampleRate: 20, // in seconds
+			maxResponseTime: 5, // in seconds
+			attempts: 3,
 			patterns: [
 				/error/i,
 				/not found/i
