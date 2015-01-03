@@ -1,16 +1,15 @@
 var fs = require('fs'); // file system
 
 module.exports = {
-	defaults: { // applies sampleRate and maxResponseTime if not specified
-		sampleRate: 10, // in seconds
-		maxResponseTime: 10 // in seconds
+	defaults: { // applies sampleRate, maxResponseTime, and attempts if not specified
+		sampleRate: 20, // in seconds
+		maxResponseTime: 10, // in seconds
+		attempts: 2
 	},
 	websites: [
 		{
 			name: 'Website',
 			url: 'https://website.com/path',
-			// sampleRate: 10 //in seconds
-			// maxResponseTime: 10 // in seconds
 			patterns: [
 				/invalid user or password/i
 			],
@@ -22,8 +21,8 @@ module.exports = {
 		{
 			name: 'Website Self-Signed',
 			url: 'https://localhost:8443/path?query=1&sort=descending',
-			sampleRate: 15, // in seconds
-			maxResponseTime: 20, // in seconds
+			sampleRate: 20, // in seconds
+			maxResponseTime: 5, // in seconds
 			patterns: [
 				/exception/i
 			],
@@ -34,8 +33,9 @@ module.exports = {
 		{
 			name: 'Facebook',
 			url: 'http://www.facebook.com',
-			sampleRate: 15, // in seconds
-			maxResponseTime: 20, // in seconds
+			sampleRate: 20, // in seconds
+			maxResponseTime: 5, // in seconds
+			attempts: 3,
 			patterns: [
 				/error/i,
 				/not found/i
