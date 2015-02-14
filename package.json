@@ -1,6 +1,6 @@
 {
 	"name": "tipoff",
-	"version": "0.0.12",
+	"version": "0.0.13",
 	"description": "TipOff is a program that monitors websites and notifies you when they go down by emailing a Down Report. It creates detailed logs that include errors, website uptimes/downtimes, and operational statistics.",
 	"main": "app.js",
 	"directories": {
