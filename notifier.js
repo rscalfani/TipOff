@@ -12,7 +12,8 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 		states: {}, // url: {name: name, state: state}
 		problemState: false,
 		intervalTimer: null,
-		nagIntervalTimer: null,
+		lastDownReport: '',
+		nagTimer: null,
 		configValidation: function() {
 			if (config.nagIntervalTimerFreq < config.intervalTimerFreq)
 				throw new Error('nagIntervalTimerFreq must be greater than intervalTimerFreq');
@@ -29,37 +30,44 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 		},
 		emailDownReport: function(reportType) {
 			reportType = reportType || 'Down';
-			var downUrls = Object.keys(private.states).filter(function(url) {
-				return private.states[url].state == 'down';
-			});
-			var downWebsites = downUrls.map(function(url) {
-				return private.states[url].name;
-			});
-			var getEventItems = function(eventItem) {
-				return private.newEvents.map(function(event) {
-					return event[eventItem];
-				});
-			};
-			var downWebsitesBuffer = formatter.createBuffer(downWebsites.length);
-			formatter.addColumnToBuffer(downWebsitesBuffer, downWebsites, 5, formatter.padRight);
-			formatter.addRepeatingColumn(downWebsitesBuffer, '    ');
-			formatter.addColumnToBuffer(downWebsitesBuffer, downUrls.map(function(url) {
-				return stats.getTime(url, 'down');
-			}), 1, formatter.padLeft);
-			var emailText = 'DOWN WEBSITES (' + downWebsites.length + '):\n' + downWebsitesBuffer.join('\n');
-			if (private.newEvents.length)
+			if (reportType == 'Down')
 			{
-				var eventsBuffer = formatter.createBuffer(getEventItems('name').length);
-				formatter.addColumnToBuffer(eventsBuffer, getEventItems('name'), 5, formatter.padRight);
-				formatter.addColumnToBuffer(eventsBuffer, getEventItems('state'), 1, formatter.padRight);
-				formatter.addRepeatingColumn(eventsBuffer, '    ');
-				formatter.addColumnToBuffer(eventsBuffer, getEventItems('date').map(function(ticks) {
-					return '[' + new Date(ticks) + ']';
+				var downUrls = Object.keys(private.states).filter(function(url) {
+					return private.states[url].state == 'down';
+				});
+				var downWebsites = downUrls.map(function(url) {
+					return private.states[url].name;
+				});
+				var getEventItems = function(eventItem) {
+					return private.newEvents.map(function(event) {
+						return event[eventItem];
+					});
+				};
+				var downWebsitesBuffer = formatter.createBuffer(downWebsites.length);
+				formatter.addColumnToBuffer(downWebsitesBuffer, downWebsites, 5, formatter.padRight);
+				formatter.addRepeatingColumn(downWebsitesBuffer, '    ');
+				formatter.addColumnToBuffer(downWebsitesBuffer, downUrls.map(function(url) {
+					return stats.getTime(url, 'down');
 				}), 1, formatter.padLeft);
-				emailText += '\n\nEVENTS:\n' + eventsBuffer.join('\n');
+				var emailText = 'DOWN WEBSITES (' + downWebsites.length + '):\n' + downWebsitesBuffer.join('\n');
+				if (private.newEvents.length)
+				{
+					var eventsBuffer = formatter.createBuffer(getEventItems('name').length);
+					formatter.addColumnToBuffer(eventsBuffer, getEventItems('name'), 5, formatter.padRight);
+					formatter.addColumnToBuffer(eventsBuffer, getEventItems('state'), 1, formatter.padRight);
+					formatter.addRepeatingColumn(eventsBuffer, '    ');
+					formatter.addColumnToBuffer(eventsBuffer, getEventItems('date').map(function(ticks) {
+						return '[' + new Date(ticks) + ']';
+					}), 1, formatter.padLeft);
+					emailText += '\n\nEVENTS:\n' + eventsBuffer.join('\n');
+				}
+				private.lastDownReport = emailText;
 			}
+			else
+				emailText = private.lastDownReport;
 			private.email(emailText, reportType);
-			private.nagIntervalTimer = setInterval(function() {
+			clearTimeout(private.nagTimer);
+			private.nagTimer = setTimeout(function() {
 				private.emailDownReport('Nag');
 			}, config.nagIntervalTimerFreq * 1000);
 		},
@@ -86,7 +94,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 				}
 				if (states[url].state != 'down')
 				{
-					clearInterval(private.nagIntervalTimer);
+					clearInterval(private.nagTimer);
 					private.newEvents.push({
 						name: name,
 						state: state,
@@ -125,7 +133,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 				}
 				if (states[url].state != 'up')
 				{
-					clearInterval(private.nagIntervalTimer);
+					clearInterval(private.nagTimer);
 					if (!firstTime) // don't want to put 'website is up' in events unless the website went down first
 					{
 						private.newEvents.push({
@@ -154,7 +162,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 			loggers.op.warn('Stopping Notifier');
 			monitor.emitter.removeAllListeners();
 			clearInterval(private.intervalTimer);
-			clearInterval(private.nagIntervalTimer);
+			clearInterval(private.nagTimer);
 		}
 	};
 	return notifier;
