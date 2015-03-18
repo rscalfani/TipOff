@@ -34,13 +34,13 @@ module.exports = function(loggers, config) {
 					return
 				}
 				var query = querystring.parse(parsedUrl.query);
-				if (parsedUrl.pathname == '/startgrace')
+				if (parsedUrl.pathname == '/startGrace')
 				{
 					private.apiInterface.startGrace(query.website, query.period);
 					response.writeHead(200, {'Content-Type': 'text/plain'});
 					response.write('Starting Grace Period for ' + query.website + ' for ' + query.period + ' minute' + (query.period != 1 ? 's' : ''));
 				}
-				else if (parsedUrl.pathname == '/stopgrace')
+				else if (parsedUrl.pathname == '/stopGrace')
 				{
 					private.apiInterface.stopGrace(query.website);
 					response.writeHead(200, {'Content-Type': 'text/plain'});
@@ -53,7 +53,7 @@ module.exports = function(loggers, config) {
 				}
 				response.end();
 			});
-			private.server.listen(8080, function() {
+			private.server.listen(config.port, function() {
 				if (private.stopping)
 					private.stop();
 				else
