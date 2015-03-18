@@ -94,7 +94,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 				}
 				if (states[url].state != 'down')
 				{
-					clearInterval(private.nagTimer);
+					clearTimeout(private.nagTimer);
 					private.newEvents.push({
 						name: name,
 						state: state,
@@ -133,7 +133,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 				}
 				if (states[url].state != 'up')
 				{
-					clearInterval(private.nagTimer);
+					clearTimeout(private.nagTimer);
 					if (!firstTime) // don't want to put 'website is up' in events unless the website went down first
 					{
 						private.newEvents.push({
@@ -162,7 +162,7 @@ module.exports = function(loggers, formatter, stats, monitor, config) {
 			loggers.op.warn('Stopping Notifier');
 			monitor.emitter.removeAllListeners();
 			clearInterval(private.intervalTimer);
-			clearInterval(private.nagTimer);
+			clearTimeout(private.nagTimer);
 		}
 	};
 	return notifier;
